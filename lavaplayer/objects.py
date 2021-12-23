@@ -33,7 +33,7 @@ class TrackStartEvent:
 
 @dataclass
 class TrackEndEvent:
-    Track: Track
+    track: Track
     guild_id: int
     reason: str
 
@@ -64,7 +64,7 @@ class WebSocketClosedEvent:
 
 
 @dataclass
-class playerUpdate:
+class PlayerUpdate:
     guild_id: int
     time: int
     position: int

@@ -56,7 +56,7 @@ class WS:
             )
 
         elif pyload["op"] == "playerUpdate":
-            data = playerUpdate(
+            data = PlayerUpdate(
                 guild_id=pyload["guildId"],
                 time=pyload["state"]["time"],
                 position=pyload["state"]["position"],
@@ -72,7 +72,7 @@ class WS:
                 self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
 
             elif pyload["type"] == "TrackEndEvent":
-                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id), pyload["reason"])
+                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, pyload["reason"]))
             
             elif pyload["type"] == "TrackExceptionEvent":
                 self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))

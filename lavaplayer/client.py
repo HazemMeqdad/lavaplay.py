@@ -1,6 +1,6 @@
 from __future__ import annotations
 import asyncio
-from typing import Any, overload
+from typing import Any
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
@@ -133,10 +133,6 @@ class LavalinkClient:
     async def wait_for(self, event: str | Any, callback: function):
         self.event_manger.add_listner(event, callback, once=True)
 
-    @overload
     async def connect(self):
         self._loop.create_task(self._ws._connect())
 
-    @overload
-    async def connect(self, token: str):
-        ...
