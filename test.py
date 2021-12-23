@@ -4,7 +4,7 @@ import logging
 import lightbulb
 
 client = hikari.GatewayBot(
-    "ODkzMzg1MzUxMzYyNjcwNTkz.YVar8g.xG6XYpNSb7-uxTi6TTc5VndkOT4",
+    "",  # token
 )  
 
 lavalink = lavaplayer.LavalinkClient(

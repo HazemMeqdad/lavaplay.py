@@ -4,7 +4,7 @@ import aiohttp
 import logging
 from .objects import (
     Info, 
-    playerUpdate, 
+    PlayerUpdate,
     TrackStartEvent, 
     TrackEndEvent, 
     TrackExceptionEvent, 
