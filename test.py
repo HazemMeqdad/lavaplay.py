@@ -2,11 +2,9 @@ from discord import channel
 import lavaplayer
 import hikari
 import logging
-import lightbulb
+import os
 
-bot = hikari.GatewayBot(
-    "",  # token
-)
+bot = hikari.GatewayBot(os.environ["token"])
 
 lavalink = lavaplayer.LavalinkClient(
     host="localhost",
