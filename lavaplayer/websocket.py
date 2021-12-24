@@ -1,5 +1,4 @@
-from aiohttp import client
-# from lavaplay import LavalinkClient as Client
+import asyncio
 import aiohttp
 import logging
 from .objects import (
@@ -9,15 +8,19 @@ from .objects import (
     TrackEndEvent, 
     TrackExceptionEvent, 
     TrackStuckEvent,
-    WebSocketClosedEvent
+    WebSocketClosedEvent,
+    Node
 )
 from .emitter import Emitter
+import typing
 
+if typing.TYPE_CHECKING:
+    from .client import LavalinkClient
 
 class WS:
     def __init__(
         self,
-        client,
+        client: "LavalinkClient",
         host: str,
         port: int,
         is_ssl: bool = False,
@@ -65,15 +68,29 @@ class WS:
             self.emitter.emit("playerUpdate", data)
 
         elif pyload["op"] == "event":
+
+            if not pyload.get("track"):
+                return
             track = await self.client._decodetrack(pyload["track"])
             guild_id = int(pyload["guildId"])
+            node = await self.client.get_guild_node(guild_id)
 
             if pyload["type"] == "TrackStartEvent":
                 self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
 
             elif pyload["type"] == "TrackEndEvent":
                 self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, pyload["reason"]))
-            
+                if not node.queue:
+                    return
+                if node.repeat:
+                    await self.client.play(guild_id, track, node.queue[0].requester, True)
+                    return
+                del node.queue[0]
+                await self.client.set_guild_node(guild_id, node)
+                print(node.queue, len(node.queue))
+                if len(node.queue) != 0:
+                    await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
+
             elif pyload["type"] == "TrackExceptionEvent":
                 self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
 

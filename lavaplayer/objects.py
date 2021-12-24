@@ -23,6 +23,7 @@ class Track:
     sourceName: str
     title: str
     uri: str
+    requester: int | None = None
 
     def __repr__(self) -> str:
         return self.title
@@ -71,5 +72,13 @@ class PlayerUpdate:
     position: int | None
     connected: bool
 
+
+@dataclass
+class Node:
+    guild_id: int
+    queue: list[Track]
+    volume: int
+    is_pasue: bool = False
+    repeat: bool = False
 
 

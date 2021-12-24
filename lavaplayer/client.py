@@ -1,11 +1,14 @@
 from __future__ import annotations
 import asyncio
 from typing import Any
+
+from lavaplayer.exceptions import NotFindNode
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track
+from .objects import Info, Track, Node
 import asyncio
+from functools import lru_cache
 
 
 class LavalinkClient:
@@ -28,7 +31,7 @@ class LavalinkClient:
         self._headers = {
             "Authorization": password,
             "User-Id": str(bot_id),
-            "Client-Name": "Lavaplay-py/0.0.1",
+            "Client-Name": "Lavaplayer-py/0.0.1",
             "Num-Shards": str(num_shards)
         }
         self.event_manger = Emitter(self._loop)
@@ -39,6 +42,7 @@ class LavalinkClient:
         self.is_ssl = is_ssl
         self.password = password
         self._api = Api(self.host, self.port, self.password, self.is_ssl)
+        self._nodes: dict[int, Track] = {}
 
     def _prossing_tracks(self, tracks: list) -> list[Track]:
         _tracks = []
@@ -85,14 +89,53 @@ class LavalinkClient:
             return await self.get_tracks(query)
         return await self.search_youtube(query)
 
-    async def play(self, guild_id: int, /, track: Track) -> None:
-        await self._ws.send({
+    async def get_guild_node(self, guild_id: int, /) -> Node | None:
+        node = self._nodes.get(guild_id)
+        if not node:
+            raise NotFindNode
+        return node
+
+    async def remove_guild_node(self, guild_id: int, /) -> None:
+        await self.get_guild_node(guild_id)
+        del self._nodes[guild_id]
+
+    async def set_guild_node(self, guild_id: int, /, node: Node) -> None:
+        await self.get_guild_node(guild_id)
+        self._nodes[guild_id] = node
+
+    async def quene(self, guild_id: int, /) -> list[Track]:
+        node = await self.get_guild_node(guild_id)
+        return node.queue
+
+    async def repeat(self, guild_id: int, /, stats: bool) -> None:
+        node = await self.get_guild_node(guild_id)
+        node.repeat = stats
+        await self.set_guild_node(guild_id, node)
+
+    async def play(self, guild_id: int, /, track: Track, requester: int, start: bool=False) -> None:
+        try:
+            node = await self.get_guild_node(guild_id)
+        except NotFindNode:
+            node = Node(guild_id, [], 100)
+            self._nodes[guild_id] = node
+        pyload = {
             "op": "play",
             "guildId": str(guild_id),
             "track": track.track,
             "startTime": "0",
             "noReplace": False
-        })
+        }
+        if start:
+            await self._ws.send(pyload)
+            return
+        queue = node.queue.copy()
+        track.requester = requester
+        node.queue.append(track)
+        await self.set_guild_node(guild_id, node)
+        if len(queue) > 0:
+            return
+        await self._ws.send(pyload)
+
 
     async def stop(self, guild_id: int, /) -> None:
         await self._ws.send({
@@ -115,13 +158,18 @@ class LavalinkClient:
         })
 
     async def volume(self, guild_id: int, /, volume: int):
+        node = await self.get_guild_node(guild_id)
+        node.volume = volume
+        await self.set_guild_node(guild_id, node)
         await self._ws.send({
             "op": "volume",
             "guildId": str(guild_id),
             "volume": volume
         })
 
+
     async def destroy(self, guild_id: int, /):
+        await self.remove_guild_node(guild_id)
         await self._ws.send({
             "op": "destroy",
             "guildId": str(guild_id)

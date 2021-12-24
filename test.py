@@ -54,7 +54,7 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
 
     elif event.message.content.startswith("!play"):
         result = await lavalink.auto_search_tracks(event.message.content.replace("!play ", ""))
-        await lavalink.play(event.guild_id, result[0])
+        await lavalink.play(event.guild_id, result[0], event.author_id)
         embed = hikari.Embed(
             description=f"[{result[0].title}]({result[0].uri})"
         )
@@ -103,16 +103,27 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         )
         await bot.rest.create_message(event.get_channel(), embed=embed)
     
+    elif event.message.content == "!quene":
+        node = await lavalink.get_guild_node(event.guild_id)
+        print(node.queue)
+        embed = hikari.Embed(
+            description="\n".join([f"{n+1}- [{i.title}]({i.uri})" for n, i in enumerate(node.queue)])
+        )
+        await bot.rest.create_message(event.get_channel(), embed=embed)
+
+    elif event.message.content == "!repeat":
+        node = await lavalink.get_guild_node(event.guild_id)
+        await lavalink.repeat(event.guild_id, True)
+
     elif event.message.content == "!help":
         embed = hikari.Embed(
-            description="!join, !play <query>, !stop, !pause, !resume, !seek, !volume, !destroy"
+            description="!join, !play <query>, !stop, !pause, !resume, !seek, !volume, !destroy, !quene, !repeat"
         )
         await bot.rest.create_message(event.get_channel(), embed=embed)
 
 @lavalink.listner(lavaplayer.TrackStartEvent)
 async def track_start_event(event: lavaplayer.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
-
 
 @lavalink.listner(lavaplayer.TrackEndEvent)
 async def track_end_event(event: lavaplayer.TrackEndEvent):
