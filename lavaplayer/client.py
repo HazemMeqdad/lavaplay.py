@@ -24,11 +24,12 @@ class LavalinkClient:
             self._loop = asyncio.get_event_loop()
         except:
             self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
         self._headers = {
             "Authorization": password,
             "User-Id": str(bot_id),
             "Client-Name": "Lavaplay-py/0.0.1",
-            # "Num-Shards": str(num_shards)
+            "Num-Shards": str(num_shards)
         }
         self.event_manger = Emitter(self._loop)
         self._ws = WS(self, host, port, is_ssl)

@@ -53,7 +53,7 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         await bot.rest.create_message(event.get_channel(), embed=embed)
 
     elif event.message.content.startswith("!play"):
-        result = await lavalink.search_youtube(event.message.content.replace("!play ", ""))
+        result = await lavalink.auto_search_tracks(event.message.content.replace("!play ", ""))
         await lavalink.play(event.guild_id, result[0])
         embed = hikari.Embed(
             description=f"[{result[0].title}]({result[0].uri})"
