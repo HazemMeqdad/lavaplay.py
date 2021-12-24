@@ -1,0 +1,3 @@
+
+class NotFindNode(Exception):
+    ...
