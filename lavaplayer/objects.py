@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 
 
@@ -67,7 +68,7 @@ class WebSocketClosedEvent:
 class PlayerUpdate:
     guild_id: int
     time: int
-    position: int
+    position: int | None
     connected: bool
 
 

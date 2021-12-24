@@ -28,7 +28,7 @@ class LavalinkClient:
             "Authorization": password,
             "User-Id": str(bot_id),
             "Client-Name": "Lavaplay-py/0.0.1",
-            "Num-Shards": str(num_shards)
+            # "Num-Shards": str(num_shards)
         }
         self.event_manger = Emitter(self._loop)
         self._ws = WS(self, host, port, is_ssl)
@@ -89,7 +89,8 @@ class LavalinkClient:
             "op": "play",
             "guildId": str(guild_id),
             "track": track.track,
-            "startTime": "0"
+            "startTime": "0",
+            "noReplace": False
         })
 
     async def stop(self, guild_id: int, /) -> None:
