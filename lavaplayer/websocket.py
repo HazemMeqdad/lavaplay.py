@@ -46,7 +46,6 @@ class WS:
                     break
 
     async def callback(self, pyload: dict):
-        print(pyload)
         if pyload["op"] == "stats":
             self.client.info = Info(
                 playingPlayers=pyload["playingPlayers"],
@@ -85,6 +84,5 @@ class WS:
                 self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
 
     async def send(self, pyload):
-        print(pyload)
         await self.ws.send_json(pyload)        
 
