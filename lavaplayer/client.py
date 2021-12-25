@@ -358,6 +358,8 @@ class LavalinkClient:
         --------
         :exc:`.NotFindNode`
             If guild not found in nodes cache.
+        :exc:`.VolumeError`
+            Volume may range from 0 to 1000.
         """
         if volume < 0 or volume > 1000:
             raise VolumeError("Volume may range from 0 to 1000. 100 is default", guild_id)
