@@ -7,11 +7,11 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='lavaplayer',
-    version='0.0.1',
+    version='1.0.0',
     description='A sample Python project',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/HazemMeqdad/lavaplayer-py',
+    url='https://github.com/HazemMeqdad/lavaplayer',
     author='HazemMeqdad',
     author_email='hazemmeqdad@gmail.com',
     classifiers=[
@@ -31,7 +31,7 @@ setup(
     packages=["lavaplayer"],
     install_requires=['aiohttp'],
     project_urls={
-        'Bug Reports': 'https://github.com/HazemMeqdad/lavaplayer-py/issues',
-        'Source': 'https://github.com/HazemMeqdad/lavaplayer-py/',
+        'Bug Reports': 'https://github.com/HazemMeqdad/lavaplayer/issues',
+        'Source': 'https://github.com/HazemMeqdad/lavaplayer/',
     },
 )

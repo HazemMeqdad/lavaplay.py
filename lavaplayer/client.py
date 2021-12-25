@@ -45,7 +45,7 @@ class LavalinkClient:
         self._headers = {
             "Authorization": password,
             "User-Id": str(bot_id),
-            "Client-Name": "Lavaplayer-py/0.0.1",
+            "Client-Name": "Lavaplayer/1.0.0",
             "Num-Shards": str(num_shards)
         }
         self.event_manger = Emitter(self._loop)

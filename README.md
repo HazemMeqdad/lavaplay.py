@@ -5,7 +5,7 @@ Represents a Lavalink client used to manage nodes and connections.
 ## setup
 
 ```shell
-pip install git+https://github.com/HazemMeqdad/lavaplayer-py
+pip install lavaplayer
 ```
 ## setup lavalink
 
