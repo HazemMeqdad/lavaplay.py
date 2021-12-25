@@ -1,4 +1,3 @@
-from discord import channel
 import lavaplayer
 import hikari
 import logging
@@ -21,6 +20,7 @@ async def on_shard_shard(event: hikari.ShardReadyEvent):
 
 @bot.listen(hikari.VoiceStateUpdateEvent)
 async def voice_state_update(v: hikari.VoiceStateUpdateEvent):
+    # await bot.wait_for()
     @bot.listen(hikari.VoiceServerUpdateEvent)
     async def voice_server_update(event: hikari.VoiceServerUpdateEvent) -> None:
         if not event.endpoint:
@@ -105,7 +105,6 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
     
     elif event.message.content == "!quene":
         node = await lavalink.get_guild_node(event.guild_id)
-        print(node.queue)
         embed = hikari.Embed(
             description="\n".join([f"{n+1}- [{i.title}]({i.uri})" for n, i in enumerate(node.queue)])
         )
@@ -114,6 +113,11 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
     elif event.message.content == "!repeat":
         node = await lavalink.get_guild_node(event.guild_id)
         await lavalink.repeat(event.guild_id, True)
+
+    elif event.message.content == "!filter":
+        filters = lavaplayer.Filters()
+        filters.lowPass(50)
+        await lavalink.filters(event.guild_id, filters)
 
     elif event.message.content == "!help":
         embed = hikari.Embed(

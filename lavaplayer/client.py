@@ -1,15 +1,11 @@
 from __future__ import annotations
 import asyncio
 from typing import Any
-
 from lavaplayer.exceptions import NotFindNode
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node
-import asyncio
-from functools import lru_cache
-
+from .objects import Info, Track, Node, Filters
 
 class LavalinkClient:
     def __init__(
@@ -20,8 +16,6 @@ class LavalinkClient:
         bot_id: int,
         num_shards: int = 1,
         is_ssl: bool = False,
-        token: str = None,
-        start_discord_gateway: bool = True
     ) -> None:
         try:
             self._loop = asyncio.get_event_loop()
@@ -92,12 +86,12 @@ class LavalinkClient:
     async def get_guild_node(self, guild_id: int, /) -> Node | None:
         node = self._nodes.get(guild_id)
         if not node:
-            raise NotFindNode
+            raise NotFindNode(guild_id)
         return node
 
     async def remove_guild_node(self, guild_id: int, /) -> None:
-        await self.get_guild_node(guild_id)
-        del self._nodes[guild_id]
+        node = await self.get_guild_node(guild_id)
+        self._nodes.pop(node.guild_id)
 
     async def set_guild_node(self, guild_id: int, /, node: Node) -> None:
         await self.get_guild_node(guild_id)
@@ -118,6 +112,8 @@ class LavalinkClient:
         except NotFindNode:
             node = Node(guild_id, [], 100)
             self._nodes[guild_id] = node
+        finally:
+            print(node)
         pyload = {
             "op": "play",
             "guildId": str(guild_id),
@@ -128,14 +124,16 @@ class LavalinkClient:
         if start:
             await self._ws.send(pyload)
             return
-        queue = node.queue.copy()
         track.requester = requester
         node.queue.append(track)
         await self.set_guild_node(guild_id, node)
-        if len(queue) > 0:
+        if len(node.queue) != 1:
             return
         await self._ws.send(pyload)
 
+    async def filters(self, guild_id: int, /, filters: Filters) -> None:
+        filters._pyload["guildId"] = str(guild_id)
+        await self._ws.send(filters._pyload)
 
     async def stop(self, guild_id: int, /) -> None:
         await self._ws.send({

@@ -1,6 +1,8 @@
 import asyncio
 import aiohttp
 import logging
+
+from lavaplayer.exceptions import NotFindNode
 from .objects import (
     Info, 
     PlayerUpdate,
@@ -73,13 +75,18 @@ class WS:
                 return
             track = await self.client._decodetrack(pyload["track"])
             guild_id = int(pyload["guildId"])
-            node = await self.client.get_guild_node(guild_id)
+            try:
+                node = await self.client.get_guild_node(guild_id)
+            except NotFindNode:
+                node = None
 
             if pyload["type"] == "TrackStartEvent":
                 self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
 
             elif pyload["type"] == "TrackEndEvent":
                 self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, pyload["reason"]))
+                if not node:
+                    return
                 if not node.queue:
                     return
                 if node.repeat:
@@ -87,12 +94,12 @@ class WS:
                     return
                 del node.queue[0]
                 await self.client.set_guild_node(guild_id, node)
-                print(node.queue, len(node.queue))
                 if len(node.queue) != 0:
                     await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
             elif pyload["type"] == "TrackExceptionEvent":
-                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
+                print(pyload)
+                # self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
 
             elif pyload["type"] == "TrackStuckEvent":
                 self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, pyload["thresholdMs"]))
