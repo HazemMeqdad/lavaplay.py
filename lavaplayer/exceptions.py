@@ -1,13 +1,27 @@
 
-class NotFindNode(Exception):
-    def __init__(self, guild_id: int) -> None:
-        self._message = f"i can't find node for `{guild_id}` guild"
+class NodeError(Exception):
+    def __init__(self, message: str, guild_id: int) -> None:
+        self._message = message
         self._guild_id = guild_id
 
     @property
     def message(self):
         return self._message
     
+    @property
+    def guild_id(self):
+        return self._guild_id
+
+
+class VolumeError(Exception):
+    def __init__(self, message: str, guild_id) -> None:
+        self._message = message
+        self._guild_id = guild_id
+
+    @property
+    def message(self):
+        return self._message
+
     @property
     def guild_id(self):
         return self._guild_id

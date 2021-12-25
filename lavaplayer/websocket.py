@@ -1,8 +1,6 @@
-import asyncio
 import aiohttp
 import logging
-
-from lavaplayer.exceptions import NotFindNode
+from lavaplayer.exceptions import NodeError
 from .objects import (
     Info, 
     PlayerUpdate,
@@ -11,7 +9,6 @@ from .objects import (
     TrackExceptionEvent, 
     TrackStuckEvent,
     WebSocketClosedEvent,
-    Node
 )
 from .emitter import Emitter
 import typing
@@ -77,7 +74,7 @@ class WS:
             guild_id = int(pyload["guildId"])
             try:
                 node = await self.client.get_guild_node(guild_id)
-            except NotFindNode:
+            except NodeError:
                 node = None
 
             if pyload["type"] == "TrackStartEvent":
@@ -99,7 +96,7 @@ class WS:
 
             elif pyload["type"] == "TrackExceptionEvent":
                 print(pyload)
-                # self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
+                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
 
             elif pyload["type"] == "TrackStuckEvent":
                 self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, pyload["thresholdMs"]))
@@ -107,6 +104,6 @@ class WS:
             elif pyload["type"] == "WebSocketClosedEvent":
                 self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
 
-    async def send(self, pyload):
+    async def send(self, pyload):  # only dict
         await self.ws.send_json(pyload)        
 
