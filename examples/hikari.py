@@ -102,11 +102,12 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
             description="destroy"
         )
         await bot.rest.create_message(event.get_channel(), embed=embed)
-    
+
     elif event.message.content == "!quene":
         node = await lavalink.get_guild_node(event.guild_id)
         embed = hikari.Embed(
-            description="\n".join([f"{n+1}- [{i.title}]({i.uri})" for n, i in enumerate(node.queue)])
+            description="\n".join(
+                [f"{n+1}- [{i.title}]({i.uri})" for n, i in enumerate(node.queue)])
         )
         await bot.rest.create_message(event.get_channel(), embed=embed)
 
@@ -125,9 +126,11 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         )
         await bot.rest.create_message(event.get_channel(), embed=embed)
 
+
 @lavalink.listner(lavaplayer.TrackStartEvent)
 async def track_start_event(event: lavaplayer.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
+
 
 @lavalink.listner(lavaplayer.TrackEndEvent)
 async def track_end_event(event: lavaplayer.TrackEndEvent):
