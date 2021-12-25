@@ -1,4 +1,4 @@
-# lavaplayer-py
+# lavaplayer
 
 Represents a Lavalink client used to manage nodes and connections.
 
@@ -13,7 +13,7 @@ you need to java 11* LTS or newer required.
 
 install [lavalink](https://github.com/freyacodes/Lavalink/releases/download/3.4/Lavalink.jar) last version, create [application.yml](https://github.com/freyacodes/Lavalink/blob/master/LavalinkServer/application.yml.example), run the server
 ```shell
-java -jar Lavalink.py
+java -jar Lavalink.jar
 ```
 ## config lavaplayer server info
 
