@@ -1,3 +1,4 @@
+import asyncio
 import lavaplayer
 import hikari
 import logging
@@ -20,22 +21,11 @@ async def on_shard_shard(event: hikari.ShardReadyEvent):
 
 @bot.listen(hikari.VoiceStateUpdateEvent)
 async def voice_state_update(v: hikari.VoiceStateUpdateEvent):
-    # await bot.wait_for()
-    @bot.listen(hikari.VoiceServerUpdateEvent)
-    async def voice_server_update(event: hikari.VoiceServerUpdateEvent) -> None:
-        if not event.endpoint:
-            logging.warning("Endpoint should never be None!")
-            return
-        await lavalink._ws.send({
-            "op": "voiceUpdate",
-            "guildId": str(v.state.guild_id),
-            "sessionId": v.state.session_id,
-            "event": {
-                "token": event.token,
-                "guild_id": str(event.guild_id),
-                "endpoint": event.raw_endpoint,
-            }
-        })
+    try:
+        event: hikari.VoiceServerUpdateEvent = await bot.wait_for(hikari.VoiceServerUpdateEvent, timeout=30)
+    except asyncio.TimeoutError:
+        ...
+    await lavalink.voice_update(v.guild_id, v.state.session_id, event.token, event.raw_endpoint)
 
 
 @bot.listen(hikari.GuildMessageCreateEvent)

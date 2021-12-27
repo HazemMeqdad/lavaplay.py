@@ -55,7 +55,7 @@ class LavalinkClient:
         self.port = port
         self.is_ssl = is_ssl
         self.password = password
-        self._api = Api(self.host, self.port, self.password, self.is_ssl)
+        self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
 
     def _prossing_tracks(self, tracks: list) -> list[Track]:
@@ -77,6 +77,18 @@ class LavalinkClient:
                 )
             )
         return _tracks
+
+    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str) -> None:
+        await self._ws.send({
+            "op": "voiceUpdate",
+            "guildId": str(guild_id),
+            "sessionId": session_id,
+            "event": {
+                "token": token,
+                "guild_id": str(guild_id),
+                "endpoint": endpoint.replace("wss://", "")
+            }
+        })
 
     async def search_youtube(self, query: str) -> list[Track] | None:
         """

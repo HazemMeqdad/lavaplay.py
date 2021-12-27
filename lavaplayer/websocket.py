@@ -50,7 +50,7 @@ class WS:
     async def callback(self, pyload: dict):
         if pyload["op"] == "stats":
             self.client.info = Info(
-                playingPlayers=pyload["playingPlayers"],
+                playing_players=pyload["playingPlayers"],
                 memory_used=pyload["memory"]["used"],
                 memory_free=pyload["memory"]["free"],
                 players=pyload["players"],
