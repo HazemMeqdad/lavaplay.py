@@ -4,7 +4,7 @@ import hikari
 import logging
 import os
 
-bot = hikari.GatewayBot(os.environ["token"])
+bot = hikari.GatewayBot(open("token.txt", "r").read())
 
 lavalink = lavaplayer.LavalinkClient(
     host="localhost",

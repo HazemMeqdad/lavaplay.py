@@ -17,6 +17,8 @@ if typing.TYPE_CHECKING:
     from .client import LavalinkClient
 
 
+_LOGGER = logging.getLogger("lavaplayer.ws")
+
 class WS:
     def __init__(
         self,
@@ -40,8 +42,9 @@ class WS:
             try:
                 self.ws = await self.session.ws_connect(self.ws_url)
             except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError, aiohttp.ClientConnectorError) as error:
-                raise NotConnectedError(f"Could not connect to websocket: {error}")
-            logging.info(f"Connected to {self.ws_url}")
+                _LOGGER.error(f"Could not connect to websocket: {error}")
+                return
+            _LOGGER.info("Connected to websocket")
             self.is_connect = True
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
@@ -110,8 +113,14 @@ class WS:
             elif pyload["type"] == "WebSocketClosedEvent":
                 self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
 
+    @property
+    def is_connected(self) -> bool:
+        return self.is_connect and self.ws.closed is False
+
     async def send(self, pyload):  # only dict
-        if self.is_connect == False:
-            raise NotConnectedError("Not connected to websocket")
+        if self.is_connected == False:
+            _LOGGER.error("Not connected to websocket")
+            return
+        print(self.is_connected)
         await self.ws.send_json(pyload)
 

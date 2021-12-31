@@ -1,6 +1,5 @@
 from __future__ import annotations
 import asyncio
-import logging
 from typing import Any
 from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
@@ -38,7 +37,6 @@ class LavalinkClient:
         bot_id: int,
         num_shards: int = 1,
         is_ssl: bool = False,
-        debug: bool = False,
     ) -> None:
         try:
             self._loop = asyncio.get_event_loop()
@@ -60,8 +58,6 @@ class LavalinkClient:
         self.password = password
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
-        self._logger = logging.getLogger("lavaplayer")
-        self._debug = debug
 
     def _prossing_tracks(self, tracks: list) -> list[Track]:
         _tracks = []
