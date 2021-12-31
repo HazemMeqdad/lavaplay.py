@@ -1,6 +1,6 @@
 import aiohttp
 import logging
-from lavaplayer.exceptions import NodeError
+from lavaplayer.exceptions import NodeError, NotConnectedError, ConnectedError
 from .objects import (
     Info, 
     PlayerUpdate,
@@ -16,6 +16,7 @@ import typing
 if typing.TYPE_CHECKING:
     from .client import LavalinkClient
 
+
 class WS:
     def __init__(
         self,
@@ -30,13 +31,18 @@ class WS:
         self._headers = client._headers
         self._loop = client._loop
         self.emitter: Emitter = client.event_manger
+        self.is_connect: bool = False
     
     async def _connect(self):
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
             self.client.session = session
             self.session = session
-            self.ws = await self.session.ws_connect(self.ws_url)
-            logging.info("lavalink is connection")
+            try:
+                self.ws = await self.session.ws_connect(self.ws_url)
+            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError, aiohttp.ClientConnectorError) as error:
+                raise NotConnectedError(f"Could not connect to websocket: {error}")
+            logging.info(f"Connected to {self.ws_url}")
+            self.is_connect = True
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     await self.callback(msg.json())
@@ -105,5 +111,7 @@ class WS:
                 self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
 
     async def send(self, pyload):  # only dict
-        await self.ws.send_json(pyload)        
+        if self.is_connect == False:
+            raise NotConnectedError("Not connected to websocket")
+        await self.ws.send_json(pyload)
 

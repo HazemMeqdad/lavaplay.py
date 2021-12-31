@@ -1,11 +1,13 @@
 from __future__ import annotations
 import asyncio
+import logging
 from typing import Any
 from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
 from .objects import Info, Track, Node, Filters
+from lavaplayer import __version__
 
 
 class LavalinkClient:
@@ -36,6 +38,7 @@ class LavalinkClient:
         bot_id: int,
         num_shards: int = 1,
         is_ssl: bool = False,
+        debug: bool = False,
     ) -> None:
         try:
             self._loop = asyncio.get_event_loop()
@@ -45,7 +48,7 @@ class LavalinkClient:
         self._headers = {
             "Authorization": password,
             "User-Id": str(bot_id),
-            "Client-Name": "Lavaplayer/1.0.0",
+            "Client-Name": f"Lavaplayer/{__version__}",
             "Num-Shards": str(num_shards)
         }
         self.event_manger = Emitter(self._loop)
@@ -57,6 +60,8 @@ class LavalinkClient:
         self.password = password
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
+        self._logger = logging.getLogger("lavaplayer")
+        self._debug = debug
 
     def _prossing_tracks(self, tracks: list) -> list[Track]:
         _tracks = []
@@ -89,6 +94,7 @@ class LavalinkClient:
                 "endpoint": endpoint.replace("wss://", "")
             }
         })
+        self._nodes[guild_id] = Node(guild_id, [], 100)
 
     async def search_youtube(self, query: str) -> list[Track] | None:
         """
@@ -147,15 +153,8 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-
-        Raises
-        --------
-        :exc:`.NotFindNode`
-            If guild not found in nodes cache.
         """
         node = self._nodes.get(guild_id)
-        if not node:
-            raise NodeError(f"i can't find node for `{guild_id}` guild", guild_id)
         return node
 
     async def remove_guild_node(self, guild_id: int, /) -> None:
@@ -166,11 +165,6 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-
-        Raises
-        --------
-        :exc:`.NotFindNode`
-            If guild not found in nodes cache.
         """
         node = await self.get_guild_node(guild_id)
         self._nodes.pop(node.guild_id)
@@ -183,11 +177,6 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-
-        Raises
-        --------
-        :exc:`.NotFindNode`
-            If guild not found in nodes cache.
         """
         await self.get_guild_node(guild_id)
         self._nodes[guild_id] = node
@@ -200,11 +189,6 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-
-        Raises
-        --------
-        :exc:`.NotFindNode`
-            If guild not found in nodes cache.
         """
         node = await self.get_guild_node(guild_id)
         return node.queue
@@ -219,11 +203,6 @@ class LavalinkClient:
             guild id for server
         stats: :class:`bool`
             the stats for repeat track
-
-        Raises
-        --------
-        :exc:`.NotFindNode`
-            If guild not found in nodes cache.
         """
         node = await self.get_guild_node(guild_id)
         node.repeat = stats
@@ -241,17 +220,15 @@ class LavalinkClient:
             user id for requester the play track
         start: :class:`bool`
             force play queue is ignored
-
+        
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
-        try:
-            node = await self.get_guild_node(guild_id)
-        except NodeError:
-            node = Node(guild_id, [], 100)
-            self._nodes[guild_id] = node
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         pyload = {
             "op": "play",
             "guildId": str(guild_id),
@@ -279,13 +256,15 @@ class LavalinkClient:
             guild id for server
         filters: :class:`Filters`
             add filters to the track  
-
+        
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
-        await self.get_guild_node(guild_id)
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         filters._pyload["guildId"] = str(guild_id)
         await self._ws.send(filters._pyload)
 
@@ -297,17 +276,49 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-
+        
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
-        await self.get_guild_node(guild_id)
+        node = await self.get_guild_node(guild_id)
+        if len(node.queue) == 0:
+            raise NodeError("Node not found", guild_id)
+        node.queue.clear()
+        await self.set_guild_node(guild_id, node)
         await self._ws.send({
             "op": "stop",
             "guildId": str(guild_id)
         })
+        return node
+
+    async def skip(self, guild_id: int, /) -> None:
+        """
+        Skip the track
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+
+        Raises
+        --------
+        :exc:`.NodeError`
+            If guild not found in nodes cache.
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+        if len(node.queue) == 0:
+            return
+        node.queue.pop(0)
+        await self.set_guild_node(guild_id, node)
+        await self._ws.send({
+            "op": "skip",
+            "guildId": str(guild_id)
+        })
+        return node
 
     async def pause(self, guild_id: int, /, stats: bool):
         """
@@ -322,10 +333,12 @@ class LavalinkClient:
 
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
-        await self.get_guild_node(guild_id)
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         await self._ws.send({
             "op": "pause",
             "guildId": str(guild_id),
@@ -345,10 +358,12 @@ class LavalinkClient:
 
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
-        await self.get_guild_node(guild_id)
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         await self._ws.send({
             "op": "seek",
             "guildId": str(guild_id),
@@ -365,17 +380,21 @@ class LavalinkClient:
             guild id for server
         volume: :class:`int`
             Volume may range from 0 to 1000. 100 is default
+        :exc:`.VolumeError`
+            Volume may range from 0 to 1000.
 
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         :exc:`.VolumeError`
-            Volume may range from 0 to 1000.
+            if volume is not in range from 0 to 1000.
         """
         if volume < 0 or volume > 1000:
             raise VolumeError("Volume may range from 0 to 1000. 100 is default", guild_id)
         node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         node.volume = volume
         await self.set_guild_node(guild_id, node)
         await self._ws.send({
@@ -397,9 +416,12 @@ class LavalinkClient:
 
         Raises
         --------
-        :exc:`.NotFindNode`
+        :exc:`.NodeError`
             If guild not found in nodes cache.
         """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
         await self.remove_guild_node(guild_id)
         await self._ws.send({
             "op": "destroy",
@@ -418,6 +440,13 @@ class LavalinkClient:
         def deco(func):
             self.event_manger.add_listner(event, func)
         return deco
+
+    @property
+    def is_connect(self) -> bool:
+        """
+        Check if the client is connect to the voice server.
+        """
+        return self._ws.is_connect
 
     async def connect(self):
         """

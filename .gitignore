@@ -131,3 +131,4 @@ dmypy.json
 application.yml
 *.jar
 test.py
+token.txt
