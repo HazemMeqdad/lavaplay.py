@@ -311,7 +311,7 @@ class LavalinkClient:
         node.queue.pop(0)
         await self.set_guild_node(guild_id, node)
         await self._ws.send({
-            "op": "skip",
+            "op": "stop",
             "guildId": str(guild_id)
         })
         return node
