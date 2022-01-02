@@ -1,6 +1,6 @@
 import aiohttp
 import logging
-from lavaplayer.exceptions import NodeError, NotConnectedError, ConnectedError
+from lavaplayer.exceptions import NodeError, WebsocketConnectionError
 from .objects import (
     Info, 
     PlayerUpdate,
@@ -16,7 +16,6 @@ import typing
 if typing.TYPE_CHECKING:
     from .client import LavalinkClient
 
-
 _LOGGER = logging.getLogger("lavaplayer.ws")
 
 class WS:
@@ -27,100 +26,208 @@ class WS:
         port: int,
         is_ssl: bool = False,
     ) -> None:
-        self.ws = None
         self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}"
+        """ The websocket url. """
+
         self.client = client
+        """ The client instance. """
+
         self._headers = client._headers
+        """ The headers to be sent with the websocket. """
+        
         self._loop = client._loop
-        self.emitter: Emitter = client.event_manger
+        """ The event loop. """
+
+        self.emitter: "Emitter" = client.event_manger
+        """ The event emitter. """
+
         self.is_connect: bool = False
-    
+        """ Whether the websocket is connected. """
+
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession
+        """ The aiohttp session. """
+
+        self.__handlers = {
+            "stats": self.stats_handler,
+            "playerUpdate": self.player_update_handler,
+            "event": self.event_handler,
+        }
+        """ The message handlers. """
+
     async def _connect(self):
-        async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
-            self.client.session = session
-            self.session = session
-            try:
-                self.ws = await self.session.ws_connect(self.ws_url)
-            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError, aiohttp.ClientConnectorError) as error:
-                _LOGGER.error(f"Could not connect to websocket: {error}")
-                return
-            _LOGGER.info("Connected to websocket")
-            self.is_connect = True
-            async for msg in self.ws:
-                if msg.type == aiohttp.WSMsgType.TEXT:
-                    await self.callback(msg.json())
-                elif msg.type == aiohttp.WSMsgType.CLOSED:
-                    logging.error("close")
-                    break
-                elif msg.type == aiohttp.WSMsgType.ERROR:
-                    logging.error(msg.data)
-                    break
+        """
+            |coro|
+            This coroutine connects to the websocket and make the websocket alive.
 
-    async def callback(self, pyload: dict):
-        if pyload["op"] == "stats":
-            self.client.info = Info(
-                playing_players=pyload["playingPlayers"],
-                memory_used=pyload["memory"]["used"],
-                memory_free=pyload["memory"]["free"],
-                players=pyload["players"],
-                uptime=pyload["uptime"]
+            Raises
+            ------
+            WebsocketConnectionError
+                If the websocket connection fails.
+        """
+        try:
+            self.ws = await self.session.ws_connect(self.ws_url, headers=self._headers)
+        except:
+            _LOGGER.error("Failed to connect to websocket")
+            raise WebsocketConnectionError("Failed to connect to websocket")
+        
+        self.is_connect = True
+
+        if self.is_connect:
+            await self.message_handler()
+
+    async def message_handler(self):
+        """
+            |coro|
+            This is the response handler for the websocket.
+
+            Raises
+            ------
+            WebsocketConnectionError
+                If the websocket connection fails.
+        """
+        
+        async for message in self.ws:
+            if message.type == aiohttp.WSMsgType.TEXT:
+                handler = self.__handlers.get(message.json()["op"])
+                if handler:
+                    await handler(message.json())
+                else:
+                    _LOGGER.warn(f'Unknown OPCode {message.json()["op"]}')
+            elif message.type == aiohttp.WSMsgType.CLOSED:
+                _LOGGER.error("close")
+                break
+            
+            elif message.type == aiohttp.WSMsgType.ERROR:
+                _LOGGER.error(message.data)
+                break
+
+    async def stats_handler(self, payload: typing.Dict[str, str]) -> None:
+        """
+            |coro|
+            This is the stats handler for the op code `stats`.
+
+            Parameters
+            ----------
+            payload: `typing.Dict[str, str]`
+                The payload of the stats event.
+        """
+
+        self.client.info = Info(
+            playing_players=payload["playingPlayers"],
+            memory_used=payload["memory"]["used"],
+            memory_free=payload["memory"]["free"],
+            players=payload["players"],
+            uptime=payload["uptime"]
+        )
+
+    async def player_update_handler(self, payload: typing.Dict[str, str]) -> None:
+        """
+            |coro|
+            This is the player update handler for the op code `playerUpdate`.
+
+            Parameters
+            ----------
+            payload: `typing.Dict[str, str]`
+                The payload of the player update event.
+        """
+
+        self.emitter.emit(
+            PlayerUpdate(
+                guild_id=payload["guildId"],
+                player_id=payload["playerId"],
+                track=payload["track"],
+                position=payload["position"],
+                volume=payload["volume"],
+                paused=payload["paused"],
+                repeat_mode=payload["repeatMode"],
+                shuffle=payload["shuffle"],
+                timestamp=payload["timestamp"],
             )
+        )
 
-        elif pyload["op"] == "playerUpdate":
-            data = PlayerUpdate(
-                guild_id=pyload["guildId"],
-                time=pyload["state"]["time"],
-                position=pyload["state"].get("position"),
-                connected=pyload["state"]["connected"],
-            )
-            self.emitter.emit("playerUpdate", data)
+    async def event_handler(self, payload: typing.Dict[str, str]) -> None:
+        """
+            |coro|
+            This is the event handler for the op code `event`.
 
-        elif pyload["op"] == "event":
+            Parameters
+            ----------
+            event_type: `str`
+                The event type.
+            payload: `typing.Dict[str, str]`
+                The payload of the event.
+        """
 
-            if not pyload.get("track"):
+        if 'track' in payload.keys():
+            return
+
+        track = await self.client._decodetrack(payload["track"])
+        """ The track object. """
+
+        guild_id = int(payload["guildId"])
+        """ The guild id. """
+
+        try:
+            node = await self.client.get_guild_node(guild_id)
+        except KeyError:
+            node = None
+
+        if payload["type"] == "TrackStartEvent":
+            self.emitter.emit("TrackStartEvent", 
+                TrackStartEvent(track, guild_id))
+
+        elif payload["type"] == "TrackEndEvent":
+            self.emitter.emit("TrackEndEvent", 
+                TrackEndEvent(track, guild_id, payload["reason"]))
+                
+            if not node or node.queue:
                 return
-            track = await self.client._decodetrack(pyload["track"])
-            guild_id = int(pyload["guildId"])
-            try:
-                node = await self.client.get_guild_node(guild_id)
-            except NodeError:
-                node = None
 
-            if pyload["type"] == "TrackStartEvent":
-                self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
+            if node.repeat:
+                return await self.client.play(guild_id, track, node.queue[0].requester, True)
+            
+            del node.queue[0]
 
-            elif pyload["type"] == "TrackEndEvent":
-                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, pyload["reason"]))
-                if not node:
-                    return
-                if not node.queue:
-                    return
-                if node.repeat:
-                    await self.client.play(guild_id, track, node.queue[0].requester, True)
-                    return
-                del node.queue[0]
-                await self.client.set_guild_node(guild_id, node)
-                if len(node.queue) != 0:
-                    await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
+            await self.client.set_guild_node(guild_id, node)
 
-            elif pyload["type"] == "TrackExceptionEvent":
-                print(pyload)
-                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
+            if len(node.queue) != 0:
+                await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
-            elif pyload["type"] == "TrackStuckEvent":
-                self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, pyload["thresholdMs"]))
+        elif payload["type"] == "TrackExceptionEvent":
+            self.emitter.emit("TrackExceptionEvent", 
+                TrackExceptionEvent(
+                    track, guild_id, payload["exception"], payload["message"], payload["severity"], payload["cause"]))
 
-            elif pyload["type"] == "WebSocketClosedEvent":
-                self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
+        elif payload["type"] == "TrackStuckEvent":
+            self.emitter.emit("TrackStuckEvent", 
+                TrackStuckEvent(
+                    track, guild_id, payload["thresholdMs"]))
+
+        elif payload["type"] == "WebSocketClosedEvent":
+            self.emitter.emit("WebSocketClosedEvent", 
+                    WebSocketClosedEvent(
+                        track, guild_id, payload["code"], payload["reason"], payload["byRemote"]))
 
     @property
     def is_connected(self) -> bool:
+        """
+            Whether the websocket is connected.
+        """
         return self.is_connect and self.ws.closed is False
 
-    async def send(self, pyload):  # only dict
-        if self.is_connected == False:
-            _LOGGER.error("Not connected to websocket")
-            return
-        print(self.is_connected)
-        await self.ws.send_json(pyload)
+    async def send(self, payload: typing.Dict):  # only dict
+        """
+            |coro|
+            This coroutine sends a message to the websocket.
 
+            Parameters
+            ----------
+
+        """
+        if self.is_connected == False:
+            return _LOGGER.error("Not connected to websocket")
+
+        if isinstance(payload, dict):
+            await self.ws.send_json(payload)
+        else:
+            raise TypeError("payload must be a dict")

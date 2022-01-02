@@ -1,4 +1,3 @@
-
 class NodeError(Exception):
     def __init__(self, message: str, guild_id: int) -> None:
         self._message = message
@@ -12,6 +11,11 @@ class NodeError(Exception):
     def guild_id(self):
         return self._guild_id
 
+class WebsocketConnectionError(Exception):
+    """
+        Raised when the websocket connection fails.
+    """
+    pass
 
 class VolumeError(Exception):
     def __init__(self, message: str, guild_id) -> None:
