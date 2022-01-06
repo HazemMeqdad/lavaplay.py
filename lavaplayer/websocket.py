@@ -11,9 +11,9 @@ from .objects import (
     WebSocketClosedEvent,
 )
 from .emitter import Emitter
-import typing
+import typing as t
 
-if typing.TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from .client import LavalinkClient
 
 

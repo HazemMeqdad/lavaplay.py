@@ -1,6 +1,5 @@
-from __future__ import annotations
 import asyncio
-from typing import Any
+import typing as t
 from collections import deque
 import logging
 
@@ -17,7 +16,7 @@ class Emitter:
         self._loop = loop
         self.listeners = deque()
     
-    def add_listner(self, event: str | Any, func: function):
+    def add_listner(self, event: t.Union[str, t.Any], func: function):
         """
         Add listner for listeners list.
 
@@ -31,7 +30,7 @@ class Emitter:
         event = event if isinstance(event, str) else event.__name__
         self.listeners.append({"event": event, "func": func})
 
-    def remove_listner(self, event: str | Any, func: function):
+    def remove_listner(self, event: t.Union[str, t.Any], func: function):
         """
         Remove listner for listeners list.
 
@@ -45,7 +44,7 @@ class Emitter:
         event = event if isinstance(event, str) else event.__name__
         self.listeners.remove([i for i in self.listeners if i["event"] == event and i["func"] == func])
 
-    def emit(self, event: str | Any, data: Any):
+    def emit(self, event: t.Union[str, t.Any], data: t.Any):
         """
         Emit for event dont use this.
 

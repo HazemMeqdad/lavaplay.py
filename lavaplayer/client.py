@@ -1,6 +1,5 @@
-from __future__ import annotations
 import asyncio
-from typing import Any
+import typing as t
 from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
@@ -31,7 +30,7 @@ class LavalinkClient:
     def __init__(
         self,
         *,
-        host: str = "127.0.0.1",
+        host: t.Optional[str] = "127.0.0.1",
         port: int,
         password: str,
         bot_id: int,
@@ -59,7 +58,7 @@ class LavalinkClient:
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
 
-    def _prossing_tracks(self, tracks: list) -> list[Track]:
+    def _prossing_tracks(self, tracks: list) -> t.List[Track]:
         _tracks = []
         for track in tracks:
             info = track["info"]
@@ -79,7 +78,26 @@ class LavalinkClient:
             )
         return _tracks
 
-    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str) -> None:
+    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Union[int, None]) -> None:
+        """
+        Update the voice connection for a guild.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        session_id: :class:`str`
+            session id for connection
+        token: :class:`str`
+            token for connection
+        endpoint: :class:`str`
+            endpoint for connection
+        channel_id: :class:`int`
+            channel id for connection, if give channel_id the connection will be closed
+        """
+        if not channel_id:
+            await self.destroy(guild_id)
+            return
         await self._ws.send({
             "op": "voiceUpdate",
             "guildId": str(guild_id),
@@ -92,7 +110,7 @@ class LavalinkClient:
         })
         self._nodes[guild_id] = Node(guild_id, [], 100)
 
-    async def search_youtube(self, query: str) -> list[Track] | None:
+    async def search_youtube(self, query: str) -> t.Union[t.List[Track], None]:
         """
         Search for tracks with youtube.
 
@@ -106,7 +124,7 @@ class LavalinkClient:
             return []
         return self._prossing_tracks(result["tracks"])
 
-    async def get_tracks(self, query: str) -> list[Track] | None:
+    async def get_tracks(self, query: str) -> t.Union[t.List[Track], None]:
         """
         Load tracks for unknow sits or youtube or soundcloud or radio.
 
@@ -124,11 +142,11 @@ class LavalinkClient:
         result = await self._api.request("GET", "/decodetrack", data={"track": track})
         return Track(track, **result)
 
-    async def _decodetracks(self, tracks: list):
+    async def _decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
         result = await self._api.request("POST", "/decodetrack", json=tracks)
         return self._prossing_tracks(result)
 
-    async def auto_search_tracks(self, query: str) -> list[Track] | None:
+    async def auto_search_tracks(self, query: str) -> t.Union[t.List[Track], None]:
         """
         Load tracks for youtube search or other urls.
 
@@ -141,7 +159,7 @@ class LavalinkClient:
             return await self.get_tracks(query)
         return await self.search_youtube(query)
 
-    async def get_guild_node(self, guild_id: int, /) -> Node | None:
+    async def get_guild_node(self, guild_id: int, /) -> t.Union[Track, None]:
         """
         Get guild info from node cache memory.
 
@@ -177,7 +195,7 @@ class LavalinkClient:
         await self.get_guild_node(guild_id)
         self._nodes[guild_id] = node
 
-    async def quene(self, guild_id: int, /) -> list[Track]:
+    async def quene(self, guild_id: int, /) -> t.List[Track]:
         """
         Get guild quene list from node cache memory.
 
@@ -316,7 +334,7 @@ class LavalinkClient:
         })
         return node
 
-    async def pause(self, guild_id: int, /, stats: bool):
+    async def pause(self, guild_id: int, /, stats: bool) -> None:
         """
         Pause the track.
 
@@ -341,7 +359,7 @@ class LavalinkClient:
             "pause": stats
         })
 
-    async def seek(self, guild_id: int, /, position: int):
+    async def seek(self, guild_id: int, /, position: int) -> None:
         """
         seek to custom position for the track, the position is in milliseconds.
 
@@ -366,7 +384,7 @@ class LavalinkClient:
             "position": position
         })
 
-    async def volume(self, guild_id: int, /, volume: int):
+    async def volume(self, guild_id: int, /, volume: int) -> None:
         """
         Set volume for a player track.
 
@@ -424,7 +442,7 @@ class LavalinkClient:
             "guildId": str(guild_id)
         })
 
-    def listner(self, event: str | Any):
+    def listner(self, event: t.Union[str, t.Any]) -> t.Callable[[t.Any], t.Any]:
         """
         The register function for listner handler
 
