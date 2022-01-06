@@ -121,6 +121,5 @@ class WS:
         if self.is_connected == False:
             _LOGGER.error("Not connected to websocket")
             return
-        print(self.is_connected)
         await self.ws.send_json(pyload)
 
