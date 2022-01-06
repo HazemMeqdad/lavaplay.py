@@ -6,6 +6,7 @@ from .websocket import WS
 from .api import Api
 from .objects import Info, Track, Node, Filters
 from lavaplayer import __version__
+import random
 
 
 class LavalinkClient:
@@ -78,7 +79,7 @@ class LavalinkClient:
             )
         return _tracks
 
-    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Union[int, None]) -> None:
+    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Optional[int]) -> None:
         """
         Update the voice connection for a guild.
 
@@ -93,7 +94,7 @@ class LavalinkClient:
         endpoint: :class:`str`
             endpoint for connection
         channel_id: :class:`int`
-            channel id for connection, if give channel_id the connection will be closed
+            channel id for connection, if not give channel_id the connection will be closed
         """
         if not channel_id:
             await self.destroy(guild_id)
@@ -110,7 +111,7 @@ class LavalinkClient:
         })
         self._nodes[guild_id] = Node(guild_id, [], 100)
 
-    async def search_youtube(self, query: str) -> t.Union[t.List[Track], None]:
+    async def search_youtube(self, query: str) -> t.Optional[t.List[Track]]:
         """
         Search for tracks with youtube.
 
@@ -124,7 +125,7 @@ class LavalinkClient:
             return []
         return self._prossing_tracks(result["tracks"])
 
-    async def get_tracks(self, query: str) -> t.Union[t.List[Track], None]:
+    async def get_tracks(self, query: str) -> t.Optional[t.List[Track]]:
         """
         Load tracks for unknow sits or youtube or soundcloud or radio.
 
@@ -146,7 +147,7 @@ class LavalinkClient:
         result = await self._api.request("POST", "/decodetrack", json=tracks)
         return self._prossing_tracks(result)
 
-    async def auto_search_tracks(self, query: str) -> t.Union[t.List[Track], None]:
+    async def auto_search_tracks(self, query: str) -> t.Optional[t.List[Track]]:
         """
         Load tracks for youtube search or other urls.
 
@@ -159,7 +160,7 @@ class LavalinkClient:
             return await self.get_tracks(query)
         return await self.search_youtube(query)
 
-    async def get_guild_node(self, guild_id: int, /) -> t.Union[Track, None]:
+    async def get_guild_node(self, guild_id: int, /) -> t.Optional[Node]:
         """
         Get guild info from node cache memory.
 
@@ -417,7 +418,7 @@ class LavalinkClient:
             "volume": volume
         })
 
-    async def destroy(self, guild_id: int, /):
+    async def destroy(self, guild_id: int, /) -> None:
         """
         Tell the server to potentially disconnect from the voice server and potentially remove the player with all its data. 
         This is useful if you want to move to a new node for a voice connection. 
@@ -442,6 +443,34 @@ class LavalinkClient:
             "guildId": str(guild_id)
         })
 
+    async def shuffle(self, guild_id: int, /) -> t.Optional[Node]:
+        """
+        Add shuffle to the track.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        
+        Raises
+        --------
+        :exc:`.NodeError`
+            If guild not found in nodes cache.
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+        if not node.queue:
+            return []
+        np = node.queue[0]
+        node.queue.remove(np)
+        node.queue = random.sample(node.queue, len(node.queue))
+        node.queue.insert(0, np)
+        node.shuffle = not node.shuffle
+        await self.set_guild_node(guild_id, node)
+        return node
+
+
     def listner(self, event: t.Union[str, t.Any]) -> t.Callable[[t.Any], t.Any]:
         """
         The register function for listner handler
@@ -451,7 +480,7 @@ class LavalinkClient:
         event: :class:`Any` | :class:`str`
             event name or class for event
         """
-        def deco(func):
+        def deco(func: t.Callable[[t.Any], t.Any]) -> t.Callable[[t.Any], t.Any]:
             self.event_manger.add_listner(event, func)
         return deco
 
