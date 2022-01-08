@@ -1,0 +1,2 @@
+furo~=2021.11.23
+sphinx-rtd-theme==1.0.0
