@@ -132,3 +132,4 @@ application.yml
 *.jar
 test.py
 token.txt
+.vscode/
