@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
 
 # -- Project information -----------------------------------------------------
@@ -31,8 +31,11 @@ autodoc_member_order = 'bysource'
 
 version = '1.0.4a'
 
-extensions = ['sphinx.ext.autodoc',
-              "sphinx.ext.githubpages", "sphinx.ext.viewcode"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.githubpages", 
+    "sphinx.ext.viewcode"
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
