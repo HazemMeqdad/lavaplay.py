@@ -79,8 +79,10 @@ class Bot(hikari.GatewayBot):
                 position = int(event.message.content.split(" ")[1])
             except IndexError:
                 await self.rest.create_message(event.get_channel(), "please enter a position")
+                return
             except ValueError:
                 await self.rest.create_message(event.get_channel(), "please enter a number")
+                return
 
             await self.lavalink.seek(event.guild_id, position)
             embed = hikari.Embed(
@@ -89,8 +91,15 @@ class Bot(hikari.GatewayBot):
             await self.rest.create_message(event.get_channel(), embed=embed)
 
         elif event.message.content.startswith("!volume"):
-            vol = event.message.content.split(" ")[1]
-            await self.lavalink.volume(event.guild_id, int(vol))
+            try:
+                vol = int(event.message.content.split(" ")[1])
+            except IndexError:
+                await self.rest.create_message(event.get_channel(), "please enter a volume")
+                return
+            except ValueError:
+                await self.rest.create_message(event.get_channel(), "please enter a number")
+                return
+            await self.lavalink.volume(event.guild_id, vol)
             embed = hikari.Embed(
                 description=f"volume choose to {vol}%"
             )
