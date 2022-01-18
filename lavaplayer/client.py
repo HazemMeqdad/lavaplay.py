@@ -466,7 +466,6 @@ class LavalinkClient:
         node.queue.remove(np)
         node.queue = random.sample(node.queue, len(node.queue))
         node.queue.insert(0, np)
-        node.shuffle = not node.shuffle
         await self.set_guild_node(guild_id, node)
         return node
 
