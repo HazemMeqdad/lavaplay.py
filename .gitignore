@@ -133,3 +133,4 @@ application.yml
 test.py
 token.txt
 .vscode/
+tasks.txt
