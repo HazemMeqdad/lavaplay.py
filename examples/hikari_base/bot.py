@@ -75,7 +75,14 @@ class Bot(hikari.GatewayBot):
             await self.rest.create_message(event.get_channel(), embed=embed)
 
         elif event.message.content == "!seek":
-            await self.lavalink.seek(event.guild_id, 100)
+            try:
+                position = int(event.message.content.split(" ")[1])
+            except IndexError:
+                await self.rest.create_message(event.get_channel(), "please enter a position")
+            except ValueError:
+                await self.rest.create_message(event.get_channel(), "please enter a number")
+
+            await self.lavalink.seek(event.guild_id, position)
             embed = hikari.Embed(
                 description="seeked"
             )
