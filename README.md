@@ -1,29 +1,86 @@
-# lavaplayer
+<h1 align="center">
+    <b>
+        <a href="https://github.com/HazemMeqdad/lavaplayer">
+            Lavaplayer
+        </a>
+    </b>
+</h1>
 
-Represents a Lavalink client used to manage nodes and connections.
 
-## setup
+<p align="center">
+    <a href="https://discord.gg/VcWRRphVQB">Support Guild</a> |
+    <a href="https://github.com/HazemMeqdad/lavaplayer/examples">Examples</a> |
+    <a href="https://lavaplayer.readthedocs.io/en/latest/">Documentation</a> |
+    <a href="https://github.com/HazemMeqdad/lavaplayer">Source</a>
+</p>
 
-```shell
-pip install lavaplayer
-```
-## setup lavalink
+<br>
 
-you need to java 11* LTS or newer required.
+Its a lavalink nodes manger to make a music bots for discord with python.
 
-install [lavalink](https://github.com/freyacodes/Lavalink/releases/download/3.4/Lavalink.jar) last version, create [application.yml](https://github.com/freyacodes/Lavalink/blob/master/LavalinkServer/application.yml.example), run the server
-```shell
-java -jar Lavalink.jar
-```
-## config lavaplayer server info
 
-from `.LavalinkClient()` set information connection
+# About
+
+Lavaplayer is a nodes manager to connection with discord voice gateway, easy to create a music bot, you can use to anything async discord wrapper library
+
+# Usage
+
+example for create connecting with lavalink server using [hikari](https://github.com/hikari-py/hikari).
+
 ```python
-host="127.0.0.1",  # server ip address
-port=8888,  # port
-password="password",  # password authentication
-bot_id=123 # bot id
+import hikari
+import lavaplayer
+
+bot = hikari.GatewayBot("token")
+
+lavalink = lavaplayer.LavalinkClient(
+    host="localhost",
+    port=2333,
+    password="youshallnotpass",
+    bot_id=123
+)
+
+@bot.listen(hikari.ShardReadyEvent)
+async def start_lavalink(event):
+    await lavalink.connect()
+
+bot.run()
 ```
 
-## license
-take to [LICENSE](./LICENSE) file
+examples for some methods.
+```python
+# Auto search mix with track or query
+await lavalink.auto_search_tracks("Rick Astley")
+
+# Play track
+await lavalink.play(guild_id, track)
+
+# Skip
+await lavalink.skip(guild_id)
+
+# Pause
+await lavalink.pause(guild_id, stats)
+
+# Volume
+await lavalink.volume(guild_id, volume)
+```
+
+# Features
+
+- [ ] Spotify support
+- [ ] connection handler
+- [ ] Support youtube play list
+- [ ] Add example for other discord wrapper library
+
+# Installation
+
+```shell
+# Linux/OS X
+$ pip3 install -U lavaplayer
+
+# Windows
+$ pip install -U lavaplayer
+```
+
+
+
