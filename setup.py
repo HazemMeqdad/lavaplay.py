@@ -5,11 +5,6 @@ import pathlib
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-# https://github.com/tandemdude/hikari-lightbulb/blob/development/setup.py#L50
-def parse_requirements_file(path):
-    with open(path) as fp:
-        dependencies = (d.strip() for d in fp.read().split("\n") if d.strip())
-        return [d for d in dependencies if not d.startswith("#")]
 
 setup(
     name='lavaplayer',
@@ -33,7 +28,7 @@ setup(
     ],
     keywords='lavalink, discord, discord-lavalink, lavaplayer',
     packages=["lavaplayer"],
-    install_requires=parse_requirements_file("requirements.txt"),
+    install_requires=["aiohttp"],
     project_urls={
         'Bug Reports': 'https://github.com/HazemMeqdad/lavaplayer/issues',
         'Source': 'https://github.com/HazemMeqdad/lavaplayer/',
