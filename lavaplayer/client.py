@@ -327,8 +327,6 @@ class LavalinkClient:
             raise NodeError("Node not found", guild_id)
         if len(node.queue) == 0:
             return
-        node.queue.pop(0)
-        await self.set_guild_node(guild_id, node)
         await self._ws.send({
             "op": "stop",
             "guildId": str(guild_id)
