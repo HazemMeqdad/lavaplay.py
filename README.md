@@ -68,7 +68,7 @@ await lavalink.volume(guild_id, volume)
 # Features
 
 - [ ] Spotify support
-- [ ] connection handler
+- [x] connection handler
 - [ ] Support youtube playlist
 - [ ] Add example for other discord wrapper library
 
