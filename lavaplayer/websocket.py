@@ -3,7 +3,7 @@ import logging
 from lavaplayer.exceptions import NodeError, NotConnectedError, ConnectedError
 from .objects import (
     Info, 
-    PlayerUpdate,
+    PlayerUpdateEvent,
     TrackStartEvent, 
     TrackEndEvent, 
     TrackExceptionEvent, 
@@ -67,7 +67,7 @@ class WS:
             )
 
         elif pyload["op"] == "playerUpdate":
-            data = PlayerUpdate(
+            data = PlayerUpdateEvent(
                 guild_id=pyload["guildId"],
                 time=pyload["state"]["time"],
                 position=pyload["state"].get("position"),

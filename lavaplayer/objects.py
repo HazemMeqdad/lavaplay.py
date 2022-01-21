@@ -89,7 +89,7 @@ class WebSocketClosedEvent:
 
 
 @dataclass
-class PlayerUpdate:
+class PlayerUpdateEvent:
     """
     Event on player update.
     """
