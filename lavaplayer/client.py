@@ -38,11 +38,7 @@ class LavalinkClient:
         num_shards: int = 1,
         is_ssl: bool = False,
     ) -> None:
-        try:
-            self._loop = asyncio.get_event_loop()
-        except:
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
+        self._loop = asyncio.get_event_loop()
         self._headers = {
             "Authorization": password,
             "User-Id": str(user_id),
@@ -277,7 +273,7 @@ class LavalinkClient:
         guild_id: :class:`int`
             guild id for server
         filters: :class:`Filters`
-            add filters to the track  
+            add filters to the track
         
         Raises
         --------
@@ -373,7 +369,7 @@ class LavalinkClient:
         ---------
         guild_id: :class:`int`
             guild id for server
-        position: :class:`int`    
+        position: :class:`int`
             the position is in milliseconds
 
         Raises
@@ -425,8 +421,8 @@ class LavalinkClient:
 
     async def destroy(self, guild_id: int, /) -> None:
         """
-        Tell the server to potentially disconnect from the voice server and potentially remove the player with all its data. 
-        This is useful if you want to move to a new node for a voice connection. 
+        Tell the server to potentially disconnect from the voice server and potentially remove the player with all its data.
+        This is useful if you want to move to a new node for a voice connection.
         Calling this function does not affect voice state, and you can send the same VOICE_SERVER_UPDATE to a new node.
 
         Parameters

@@ -1,0 +1,8 @@
+[flake8]
+ignore = 
+    E501,  # line too long
+    W293,  # blank line contains whitespace
+
+per-file-ignores = 
+    test.py: E302, E501, F811, F811, W292
+    lavaplayer/__init__.py: F401, F403, W292

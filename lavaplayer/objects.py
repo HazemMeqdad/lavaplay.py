@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import typing as t
 
+
 @dataclass
 class Info:
     """
@@ -36,6 +37,7 @@ class Track:
     def __repr__(self) -> str:
         return self.title
 
+
 @dataclass
 class TrackStartEvent:
     """
@@ -43,6 +45,7 @@ class TrackStartEvent:
     """
     track: Track
     guild_id: int
+
 
 @dataclass
 class TrackEndEvent:
@@ -52,6 +55,7 @@ class TrackEndEvent:
     track: Track
     guild_id: int
     reason: str
+
 
 @dataclass
 class TrackExceptionEvent:
@@ -135,7 +139,7 @@ class Filters:
         Float value where 1.0 is 100%. Values >1.0 may cause clipping
     """
     def __init__(self, volume: t.Union[int, float] = 1.0) -> None:
-        self._pyload: dict = {"op": "filters","volume": volume}
+        self._pyload: dict = {"op": "filters", "volume": volume}
     
     def equalizer(self, band: t.Union[int, float], gain: t.Union[int, float]):
         """
@@ -174,12 +178,12 @@ class Filters:
     
     def rotation(self, rotation_hz: t.Union[int, float]):
         """
-        Rotates the sound around the stereo channels/user headphones aka Audio Panning. 
+        Rotates the sound around the stereo channels/user headphones aka Audio Panning.
         It can produce an effect similar to: https://youtu.be/QB9EB8mTKcc (without the reverb)
         """
         self._pyload["rotation"] = {"rotationHz": rotation_hz}
 
-    def distortion(self, sin_offset: t.Union[int, float], sin_scale: t.Union[int, float], cos_offset: t.Union[int, float],cos_scale: t.Union[int, float], tan_offset: t.Union[int, float], tan_scale: t.Union[int, float],  offset: t.Union[int, float], scale: t.Union[int, float]):
+    def distortion(self, sin_offset: t.Union[int, float], sin_scale: t.Union[int, float], cos_offset: t.Union[int, float], cos_scale: t.Union[int, float], tan_offset: t.Union[int, float], tan_scale: t.Union[int, float], offset: t.Union[int, float], scale: t.Union[int, float]):
         """
         Distortion effect. It can generate some pretty unique audio effects.
         """
@@ -193,11 +197,10 @@ class Filters:
 
         Setting all factors to 0.5 means both channels get the same audio.
         """
-        self._pyload["channelMix"] = {"leftToLeft": left_to_left, "leftToRight": left_to_right, "rightToLeft": right_to_left,"rightToRight": right_to_right}
+        self._pyload["channelMix"] = {"leftToLeft": left_to_left, "leftToRight": left_to_right, "rightToLeft": right_to_left, "rightToRight": right_to_right}
 
     def low_pass(self, smoothing: t.Union[int, float]):
         """
         Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
         """
         self._pyload["lowPass"] = {"smoothing": smoothing}
-

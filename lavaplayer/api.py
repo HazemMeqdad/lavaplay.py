@@ -37,9 +37,5 @@ class Api:
             data for request
         """
         async with aiohttp.ClientSession(headers=self.herders) as session:
-            async with session.request(method, self.rest_uri+rout, data=data) as resp:
+            async with session.request(method, self.rest_uri + rout, data=data) as resp:
                 return await resp.json()
-        
-
-
-

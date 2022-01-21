@@ -33,7 +33,7 @@ version = '1.0.4a'
 
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.githubpages", 
+    "sphinx.ext.githubpages",
     "sphinx.ext.viewcode"
 ]
 

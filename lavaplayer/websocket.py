@@ -1,12 +1,12 @@
 import aiohttp
 import logging
-from lavaplayer.exceptions import NodeError, NotConnectedError, ConnectedError
+from lavaplayer.exceptions import NodeError
 from .objects import (
-    Info, 
+    Info,
     PlayerUpdateEvent,
-    TrackStartEvent, 
-    TrackEndEvent, 
-    TrackExceptionEvent, 
+    TrackStartEvent,
+    TrackEndEvent,
+    TrackExceptionEvent,
     TrackStuckEvent,
     WebSocketClosedEvent,
 )
@@ -18,6 +18,7 @@ if t.TYPE_CHECKING:
 
 
 _LOGGER = logging.getLogger("lavaplayer.ws")
+
 
 class WS:
     def __init__(
@@ -118,8 +119,7 @@ class WS:
         return self.is_connect and self.ws.closed is False
 
     async def send(self, pyload):  # only dict
-        if self.is_connected == False:
+        if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
             return
         await self.ws.send_json(pyload)
-

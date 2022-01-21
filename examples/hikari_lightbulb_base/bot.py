@@ -37,7 +37,6 @@ class Bot(lightbulb.BotApp):
             return
         await self.lavalink.voice_update(v.guild_id, v.state.session_id, event.token, event.raw_endpoint, v.state.channel_id)
 
-
     def run(self):
         # discord gateway events listener
         self.event_manager.subscribe(hikari.ShardReadyEvent, self.start_lavalink)
@@ -69,6 +68,7 @@ bot = Bot(os.environ["TOKEN"], PREFIX)
 
 implements = [lightbulb.commands.PrefixCommand] if not SLASH_COMMAND else [lightbulb.commands.PrefixCommand, lightbulb.commands.SlashCommand]
 
+
 # Commands
 # ------------------------------------- #
 @bot.command()
@@ -83,7 +83,8 @@ async def join_command(ctx: lightbulb.context.Context):
     channel_id = voice_state[0].channel_id
     await bot.update_voice_state(ctx.guild_id, channel_id, self_deaf=True)
     await ctx.respond(f"done join to <#{channel_id}>")
-    
+
+
 @bot.command()
 @lightbulb.option(name="query", description="query to search", required=True)
 @lightbulb.command(name="play", description="Play command", aliases=["p"])
@@ -96,7 +97,8 @@ async def play_command(ctx: lightbulb.context.Context):
         return
     await bot.lavalink.play(ctx.guild_id, result[0], ctx.author.id)  # play the first result
     await ctx.respond(f"[{result[0].title}]({result[0].uri})")  # send the embed
-    
+
+
 @bot.command()
 @lightbulb.command(name="stop", description="Stop command", aliases=["s"])
 @lightbulb.implements(*implements)
@@ -108,7 +110,7 @@ async def stop_command(ctx: lightbulb.context.Context):
 @bot.command()
 @lightbulb.command(name="pause", description="Pause command")
 @lightbulb.implements(*implements)
-async def stop_command(ctx: lightbulb.context.Context):
+async def pause_command(ctx: lightbulb.context.Context):
     await bot.lavalink.pause(ctx.guild_id, True)
     await ctx.respond("The music is paused now")
 
@@ -116,7 +118,7 @@ async def stop_command(ctx: lightbulb.context.Context):
 @bot.command()
 @lightbulb.command(name="resume", description="Resume command")
 @lightbulb.implements(*implements)
-async def stop_command(ctx: lightbulb.context.Context):
+async def resume_command(ctx: lightbulb.context.Context):
     await bot.lavalink.pause(ctx.guild_id, False)
     await ctx.respond("The music is resumed now")
 
@@ -140,12 +142,14 @@ async def volume_command(ctx: lightbulb.context.Context):
     await bot.lavalink.volume(ctx.guild_id, volume)
     await ctx.respond(f"done set volume to {volume}%")
 
+
 @bot.command()
 @lightbulb.command(name="destroy", description="Destroy command")
 @lightbulb.implements(*implements)
 async def destroy_command(ctx: lightbulb.context.Context):
     await bot.lavalink.destroy(ctx.guild_id)
     await ctx.respond("done destroy the bot")
+
 
 @bot.command()
 @lightbulb.command(name="queue", description="Queue command")
@@ -158,6 +162,7 @@ async def queue_command(ctx: lightbulb.context.Context):
     )
     await ctx.respond(embed=embed)
 
+
 @bot.command()
 @lightbulb.command(name="np", description="Now playing command")
 @lightbulb.implements(*implements)
@@ -167,6 +172,7 @@ async def np_command(ctx: lightbulb.context.Context):
         await ctx.respond("nothing playing")
         return
     await ctx.respond(f"[{node.queue[0].title}]({node.queue[0].uri})")
+
 
 @bot.command()
 @lightbulb.command(name="repeat", description="Repeat command")
@@ -180,12 +186,14 @@ async def repeat_command(ctx: lightbulb.context.Context):
         return
     await ctx.respond("done stop repeat the music")
 
+
 @bot.command()
 @lightbulb.command(name="shuffle", description="Shuffle command")
 @lightbulb.implements(*implements)
 async def shuffle_command(ctx: lightbulb.context.Context):
     await bot.lavalink.shuffle(ctx.guild_id)
     await ctx.respond("done shuffle the music")
+
 
 @bot.command()
 @lightbulb.command(name="leave", description="Leave command")

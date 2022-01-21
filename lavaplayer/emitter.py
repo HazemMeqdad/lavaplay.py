@@ -3,6 +3,7 @@ import typing as t
 from collections import deque
 import logging
 
+
 class Emitter:
     """
     The class is a manger event from websocket.
@@ -62,4 +63,3 @@ class Emitter:
                 self._loop.create_task(event["func"](data))
             else:
                 logging.error("events only async func, you can't use sync -_-")
-

@@ -4,6 +4,7 @@ import hikari
 import logging
 import os
 
+
 class Bot(hikari.GatewayBot):
     def __init__(self, token: str) -> None:
         super().__init__(token)
@@ -17,7 +18,6 @@ class Bot(hikari.GatewayBot):
             bot_id=123,  # Lavalink bot id
         )
         await self.lavalink.connect()
-        
         # add lavalink events listener
         self.lavalink.event_manger.add_listner(lavaplayer.TrackEndEvent, track_end_event)
         self.lavalink.event_manger.add_listner(lavaplayer.TrackStartEvent, track_start_event)
@@ -142,14 +142,17 @@ class Bot(hikari.GatewayBot):
         self.event_manager.subscribe(hikari.GuildMessageCreateEvent, self.message_create)
         super().run()
 
+
 # -------------------------------- #
 # track start event
 async def track_start_event(event: lavaplayer.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
 
+
 # track end event
 async def track_end_event(event: lavaplayer.TrackEndEvent):
     logging.info(f"track end: {event.track.title}")
+
 
 # web socket closed event
 async def web_soket_closed_event(event: lavaplayer.WebSocketClosedEvent):
