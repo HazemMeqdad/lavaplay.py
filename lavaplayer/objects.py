@@ -13,10 +13,10 @@ class Info:
     uptime: int
 
 
-@dataclass
+@dataclass(repr=True)
 class Track:
     """
-    Info track
+    Info track object.
     """
     track: str
     identifier: str
@@ -29,6 +29,9 @@ class Track:
     title: str
     uri: str
     requester: t.Union[str, None] = None
+    """
+    optional option to save a requester for the track
+    """
 
     def __repr__(self) -> str:
         return self.title
@@ -36,7 +39,7 @@ class Track:
 @dataclass
 class TrackStartEvent:
     """
-    None
+    Event on track start.
     """
     track: Track
     guild_id: int
@@ -44,7 +47,7 @@ class TrackStartEvent:
 @dataclass
 class TrackEndEvent:
     """
-    None
+    Event on track end.
     """
     track: Track
     guild_id: int
@@ -53,7 +56,7 @@ class TrackEndEvent:
 @dataclass
 class TrackExceptionEvent:
     """
-    None
+    Event on track exception.
     """
     track: Track
     guild_id: int
@@ -66,7 +69,7 @@ class TrackExceptionEvent:
 @dataclass
 class TrackStuckEvent:
     """
-    None
+    Event on track stuck.
     """
     track: Track
     guild_id: int
@@ -76,7 +79,7 @@ class TrackStuckEvent:
 @dataclass
 class WebSocketClosedEvent:
     """
-    None
+    Event on websocket closed.
     """
     track: Track
     guild_id: int
@@ -88,7 +91,7 @@ class WebSocketClosedEvent:
 @dataclass
 class PlayerUpdate:
     """
-    None
+    Event on player update.
     """
     guild_id: int
     time: int
