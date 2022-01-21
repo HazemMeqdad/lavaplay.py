@@ -106,8 +106,19 @@ class Node:
     volume: int
     is_pasue: bool = False
     repeat: bool = False
+    is_connected: bool = False
 
 
+@dataclass
+class ConnectinoInfo:
+    """
+    A info for connectino just use to save the connection information.
+    """
+    guild_id: int
+    session_id: str
+    channel_id: t.Optional[int]
+    
+    
 @dataclass(init=True)
 class Filters:
     """

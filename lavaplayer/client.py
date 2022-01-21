@@ -4,7 +4,7 @@ from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters
+from .objects import Info, Track, Node, Filters, ConnectinoInfo
 from lavaplayer import __version__
 import random
 
@@ -34,7 +34,7 @@ class LavalinkClient:
         host: t.Optional[str] = "127.0.0.1",
         port: int,
         password: str,
-        bot_id: int,
+        user_id: int,
         num_shards: int = 1,
         is_ssl: bool = False,
     ) -> None:
@@ -45,7 +45,7 @@ class LavalinkClient:
             asyncio.set_event_loop(self._loop)
         self._headers = {
             "Authorization": password,
-            "User-Id": str(bot_id),
+            "User-Id": str(user_id),
             "Client-Name": f"Lavaplayer/{__version__}",
             "Num-Shards": str(num_shards)
         }
@@ -56,8 +56,10 @@ class LavalinkClient:
         self.port = port
         self.is_ssl = is_ssl
         self.password = password
+        self.user_id = user_id
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
+        self._voice_handlers: dict[int, ConnectinoInfo] = {}
 
     def _prossing_tracks(self, tracks: list) -> t.List[Track]:
         _tracks = []
@@ -109,7 +111,12 @@ class LavalinkClient:
                 "endpoint": endpoint.replace("wss://", "")
             }
         })
-        self._nodes[guild_id] = Node(guild_id, [], 100)
+        await self.create_new_node(guild_id, is_connected=True)
+
+    async def create_new_node(self, guild_id: int, /, is_connected: bool = False) -> Node:
+        node = Node(guild_id, [], 100)
+        self._nodes[guild_id] = node
+        return node
 
     async def search_youtube(self, query: str) -> t.Optional[t.List[Track]]:
         """
@@ -467,6 +474,79 @@ class LavalinkClient:
         await self.set_guild_node(guild_id, node)
         return node
 
+    async def raw_voice_state_update(self, guild_id: int, /, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
+        """
+        A voice state update has been received from Discord.
+        
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        user_id: :class:`int`
+            user id
+        session_id: :class:`str`
+            session id
+        channel_id: :class:`int` | :class:`None`
+            the channel id, if not give the channel id will automatically destroy node.
+        """
+        if user_id != self.user_id:
+            return
+        elif not channel_id:
+            await self.destroy(guild_id)
+            return
+        self._voice_handlers[guild_id] = ConnectinoInfo(guild_id, session_id, channel_id)
+
+    async def raw_voice_server_update(self, guild_id: int, /, endpoint: str, token: str) -> None:
+        """
+        A voice server update has been received from Discord.
+        
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        endpoint: :class:`str`
+            the endpoint for the voice server
+        token: :class:`str`
+            the token for the voice server
+        """
+        connection_info = self._voice_handlers.get(guild_id)
+        if not connection_info:
+            return
+        if guild_id == connection_info.guild_id:
+            await self.voice_update(guild_id, connection_info.session_id, token, endpoint, connection_info.channel_id)
+
+    async def wait_for_connection(self, guild_id: int, /) -> t.Optional[Node]:
+        """
+        Wait for the voice connection to be established.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        """
+        while not (await self.get_guild_node(guild_id)):
+            await asyncio.sleep(0.1)
+        return await self.get_guild_node(guild_id)
+
+    async def wait_for_remove_connection(self, guild_id: int, /) -> None:
+        """
+        Wait for the voice connection to be removed.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+
+        Raises
+        --------
+        :exc:`.NodeError`
+            If guild not found in nodes cache.
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+        while (await self.get_guild_node(guild_id)):
+            await asyncio.sleep(0.1)
 
     def listner(self, event: t.Union[str, t.Any]) -> t.Callable[[t.Any], t.Any]:
         """
@@ -488,7 +568,7 @@ class LavalinkClient:
         """
         return self._ws.is_connect
 
-    async def connect(self):
+    def connect(self):
         """
         Connect to the lavalink websocket
         """
