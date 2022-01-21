@@ -4,7 +4,7 @@ from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters, ConnectinoInfo
+from .objects import Info, Track, Node, Filters, ConnectinoInfo, Event
 from lavaplayer import __version__
 import random
 
@@ -544,7 +544,7 @@ class LavalinkClient:
         while (await self.get_guild_node(guild_id)):
             await asyncio.sleep(0.1)
 
-    def listner(self, event: t.Union[str, t.Any]) -> t.Callable[[t.Any], t.Any]:
+    def listner(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
         """
         The register function for listner handler
 
@@ -553,7 +553,7 @@ class LavalinkClient:
         event: :class:`Any` | :class:`str`
             event name or class for event
         """
-        def deco(func: t.Callable[[t.Any], t.Any]) -> t.Callable[[t.Any], t.Any]:
+        def deco(func: t.Awaitable) -> t.Callable[..., t.Awaitable]:
             self.event_manger.add_listner(event, func)
         return deco
 

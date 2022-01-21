@@ -2,6 +2,12 @@ from dataclasses import dataclass
 import typing as t
 
 
+class Event:
+    """
+    The class is a base event for websocket.
+    """
+
+
 @dataclass
 class Info:
     """
@@ -39,7 +45,7 @@ class Track:
 
 
 @dataclass
-class TrackStartEvent:
+class TrackStartEvent(Event):
     """
     Event on track start.
     """
@@ -48,7 +54,7 @@ class TrackStartEvent:
 
 
 @dataclass
-class TrackEndEvent:
+class TrackEndEvent(Event):
     """
     Event on track end.
     """
@@ -58,7 +64,7 @@ class TrackEndEvent:
 
 
 @dataclass
-class TrackExceptionEvent:
+class TrackExceptionEvent(Event):
     """
     Event on track exception.
     """
@@ -71,7 +77,7 @@ class TrackExceptionEvent:
 
 
 @dataclass
-class TrackStuckEvent:
+class TrackStuckEvent(Event):
     """
     Event on track stuck.
     """
@@ -81,7 +87,7 @@ class TrackStuckEvent:
 
 
 @dataclass
-class WebSocketClosedEvent:
+class WebSocketClosedEvent(Event):
     """
     Event on websocket closed.
     """
@@ -93,7 +99,7 @@ class WebSocketClosedEvent:
 
 
 @dataclass
-class PlayerUpdateEvent:
+class PlayerUpdateEvent(Event):
     """
     Event on player update.
     """
