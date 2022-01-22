@@ -9,7 +9,7 @@
 
 <p align="center">
     <a href="https://discord.gg/VcWRRphVQB">Support Guild</a> |
-    <a href="https://github.com/HazemMeqdad/lavaplayer/examples">Examples</a> |
+    <a href="https://github.com/HazemMeqdad/lavaplayer/tree/main/examples">Examples</a> |
     <a href="https://lavaplayer.readthedocs.io/en/latest/">Documentation</a> |
     <a href="https://github.com/HazemMeqdad/lavaplayer">Source</a>
 </p>
