@@ -544,6 +544,9 @@ class LavalinkClient:
             await asyncio.sleep(0.1)
 
     def _raise_or_emit(self, exception: Exception, *args, **kwargs) -> None:
+        """
+        This function is used to raise or emit an exception. its not a complete becuse i need to save listener with asyncio.futures but not now.
+        """
         listeners = self.event_manger.listeners
         error_handler = [i for i in listeners if i["event"] == "ErrorEvent"]
         if not error_handler:
