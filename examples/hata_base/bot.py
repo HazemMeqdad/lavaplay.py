@@ -7,7 +7,7 @@ import logging
 
 
 PREFIX = "!"
-TOKEN = "ODkzMzg1MzUxMzYyNjcwNTkz.YVar8g.mJiNNJcaRrsDWhS1MSNmvqORxuk"
+TOKEN = "..."
 
 bot = hata.Client(TOKEN, extensions="commands_v2", prefix=PREFIX)
 lavalink = lavaplayer.LavalinkClient(
