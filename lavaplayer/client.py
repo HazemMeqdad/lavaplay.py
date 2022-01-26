@@ -38,7 +38,11 @@ class LavalinkClient:
         num_shards: int = 1,
         is_ssl: bool = False,
     ) -> None:
-        self._loop = asyncio.get_event_loop()
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
         self._headers = {
             "Authorization": password,
             "User-Id": str(user_id),

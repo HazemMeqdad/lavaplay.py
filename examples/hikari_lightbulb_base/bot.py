@@ -6,68 +6,33 @@ import os
 import asyncio
 
 SLASH_COMMAND = True  # if you want to use slash command, set True
-PREFIX = "!"  # prefix for commands
+PREFIX = ","  # prefix for commands
 
 
-class Bot(lightbulb.BotApp):
-    def __init__(self, token: str, prefix: str) -> None:
-        super().__init__(token, prefix=prefix)
-        self.lavalink: lavaplayer.LavalinkClient = None
-    
-    # On shard ready the bot will connect to the lavalink node
-    async def start_lavalink(self, event: hikari.ShardReadyEvent):
-        self.lavalink = lavaplayer.LavalinkClient(
-            host="localhost",  # Lavalink host
-            port=2333,  # Lavalink port
-            password="youshallnotpass",  # Lavalink password
-            bot_id=self.get_me().id,  # Lavalink bot id
-        )
-        await self.lavalink.connect()
+bot = lightbulb.BotApp(PREFIX, enable_debug_events=True)
+lavalink = lavaplayer.LavalinkClient(
+    host="localhost",  # Lavalink host
+    port=2333,  # Lavalink port
+    password="youshallnotpass",  # Lavalink password
+    bot_id=893385351362670593  # Lavalink bot id
+)
+ 
 
-        # add lavalink events listener
-        self.lavalink.event_manager.add_listener(lavaplayer.TrackEndEvent, track_end_event)
-        self.lavalink.event_manager.add_listener(lavaplayer.TrackStartEvent, track_start_event)
-        self.lavalink.event_manager.add_listener(lavaplayer.WebSocketClosedEvent, web_socket_closed_event)
-
-    # On voice state update the bot will update the lavalink node
-    async def voice_state_update(self, v: hikari.VoiceStateUpdateEvent):
-        try:
-            event: hikari.VoiceServerUpdateEvent = await bot.wait_for(hikari.VoiceServerUpdateEvent, timeout=30)
-        except asyncio.TimeoutError:
-            return
-        await self.lavalink.voice_update(v.guild_id, v.state.session_id, event.token, event.raw_endpoint, v.state.channel_id)
-
-    def run(self):
-        # discord gateway events listener
-        self.event_manager.subscribe(hikari.ShardReadyEvent, self.start_lavalink)
-        self.event_manager.subscribe(hikari.VoiceStateUpdateEvent, self.voice_state_update)
-        super().run()
-
-# -------------------------------- #
-# track start event
-
-
+@lavalink.listen(lavaplayer.TrackStartEvent)
 async def track_start_event(event: lavaplayer.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
 
-# track end event
-
-
+@lavalink.listen(lavaplayer.TrackEndEvent)
 async def track_end_event(event: lavaplayer.TrackEndEvent):
     logging.info(f"track end: {event.track.title}")
 
-# web socket closed event
-
-
+@lavalink.listen(lavaplayer.WebSocketClosedEvent)
 async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
     logging.error(f"error with websocket {event.reason}")
-# -------------------------------- #
 
-# bot client
-bot = Bot(os.environ["TOKEN"], PREFIX)
+
 
 implements = [lightbulb.commands.PrefixCommand] if not SLASH_COMMAND else [lightbulb.commands.PrefixCommand, lightbulb.commands.SlashCommand]
-
 
 # Commands
 # ------------------------------------- #
