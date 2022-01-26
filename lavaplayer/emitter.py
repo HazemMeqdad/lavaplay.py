@@ -18,9 +18,9 @@ class Emitter:
         self._loop = loop
         self.listeners = deque()
     
-    def add_listner(self, event: t.Union[str, Event], func: t.Callable):
+    def add_listener(self, event: t.Union[str, Event], func: t.Callable):
         """
-        Add listner for listeners list.
+        Add listener for listeners list.
 
         Parameters
         ---------
@@ -32,9 +32,9 @@ class Emitter:
         event = event if isinstance(event, str) else event.__name__
         self.listeners.append({"event": event, "func": func})
 
-    def remove_listner(self, event: t.Union[str, Event], func: t.Callable):
+    def remove_listener(self, event: t.Union[str, Event], func: t.Callable):
         """
-        Remove listner for listeners list.
+        Remove listener for listeners list.
 
         Parameters
         ---------

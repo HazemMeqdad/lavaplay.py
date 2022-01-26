@@ -4,7 +4,7 @@ from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters, ConnectinoInfo, Event, ErrorEvent
+from .objects import Info, Track, Node, Filters, ConnectionInfo, Event
 from lavaplayer import __version__
 import random
 
@@ -45,7 +45,7 @@ class LavalinkClient:
             "Client-Name": f"Lavaplayer/{__version__}",
             "Num-Shards": str(num_shards)
         }
-        self.event_manger = Emitter(self._loop)
+        self.event_manager = Emitter(self._loop)
         self._ws = WS(self, host, port, is_ssl)
         self.info: Info = None
         self.host = host
@@ -55,7 +55,7 @@ class LavalinkClient:
         self.user_id = user_id
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: dict[int, Track] = {}
-        self._voice_handlers: dict[int, ConnectinoInfo] = {}
+        self._voice_handlers: dict[int, ConnectionInfo] = {}
 
     def _prossing_tracks(self, tracks: list) -> t.List[Track]:
         _tracks = []
@@ -199,9 +199,9 @@ class LavalinkClient:
         await self.get_guild_node(guild_id)
         self._nodes[guild_id] = node
 
-    async def quene(self, guild_id: int, /) -> t.List[Track]:
+    async def queue(self, guild_id: int, /) -> t.List[Track]:
         """
-        Get guild quene list from node cache memory.
+        Get guild queue list from node cache memory.
 
         Parameters
         ---------
@@ -246,8 +246,8 @@ class LavalinkClient:
         """
         node = await self.get_guild_node(guild_id)
         if not node:
-            return self._raise_or_emit(NodeError, "Node not found", guild_id)
-        pyload = {
+            raise NodeError("Node not found", guild_id)
+        payload = {
             "op": "play",
             "guildId": str(guild_id),
             "track": track.track,
@@ -255,14 +255,14 @@ class LavalinkClient:
             "noReplace": False
         }
         if start:
-            await self._ws.send(pyload)
+            await self._ws.send(payload)
             return
         track.requester = requester
         node.queue.append(track)
         await self.set_guild_node(guild_id, node)
         if len(node.queue) != 1:
             return
-        await self._ws.send(pyload)
+        await self._ws.send(payload)
 
     async def filters(self, guild_id: int, /, filters: Filters) -> None:
         """
@@ -283,8 +283,8 @@ class LavalinkClient:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
-        filters._pyload["guildId"] = str(guild_id)
-        await self._ws.send(filters._pyload)
+        filters._payload["guildId"] = str(guild_id)
+        await self._ws.send(filters._payload)
 
     async def stop(self, guild_id: int, /) -> None:
         """
@@ -490,7 +490,7 @@ class LavalinkClient:
         elif not channel_id:
             await self.destroy(guild_id)
             return
-        self._voice_handlers[guild_id] = ConnectinoInfo(guild_id, session_id, channel_id)
+        self._voice_handlers[guild_id] = ConnectionInfo(guild_id, session_id, channel_id)
 
     async def raw_voice_server_update(self, guild_id: int, /, endpoint: str, token: str) -> None:
         """
@@ -552,7 +552,7 @@ class LavalinkClient:
 
     def listner(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
         """
-        The register function for listner handler
+        The register function for listener handler
 
         Parameters
         ---------
@@ -560,7 +560,7 @@ class LavalinkClient:
             event name or class for event
         """
         def deco(func: t.Awaitable) -> t.Callable[..., t.Awaitable]:
-            self.event_manger.add_listner(event, func)
+            self.event_manager.add_listener(event, func)
         return deco
 
     @property

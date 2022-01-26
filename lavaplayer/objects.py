@@ -126,15 +126,15 @@ class Node:
     guild_id: int
     queue: t.List[Track]
     volume: int
-    is_pasue: bool = False
+    is_pause: bool = False
     repeat: bool = False
     is_connected: bool = False
 
 
 @dataclass
-class ConnectinoInfo:
+class ConnectionInfo:
     """
-    A info for connectino just use to save the connection information.
+    A info for Connection just use to save the connection information.
     """
     guild_id: int
     session_id: str
@@ -154,7 +154,7 @@ class Filters:
         Float value where 1.0 is 100%. Values >1.0 may cause clipping
     """
     def __init__(self, volume: t.Union[int, float] = 1.0) -> None:
-        self._pyload: dict = {"op": "filters", "volume": volume}
+        self._payload: dict = {"op": "filters", "volume": volume}
     
     def equalizer(self, band: t.Union[int, float], gain: t.Union[int, float]):
         """
@@ -164,45 +164,45 @@ class Filters:
         where -0.25 means the given band is completely muted, and 0.25 means it is doubled. Modifying the gain could
         also change the volume of the output.
         """
-        self._pyload["equalizer"] = [{"band": band, "gain": gain}]
+        self._payload["equalizer"] = [{"band": band, "gain": gain}]
     
     def karaoke(self, level: t.Union[int, float], mono_level: t.Union[int, float], filter_band: t.Union[int, float], filter_width: t.Union[int, float]):
         """
         Uses equalization to eliminate part of a band, usually targeting vocals.
         """
-        self._pyload["karaoke"] = {"level": level, "monoLevel": mono_level, "filterBand": filter_band, "filterWidth": filter_width}
+        self._payload["karaoke"] = {"level": level, "monoLevel": mono_level, "filterBand": filter_band, "filterWidth": filter_width}
     
     def timescale(self, speed: t.Union[int, float], pitch: t.Union[int, float], rate: t.Union[int, float]):
         """
         Changes the speed, pitch, and rate. All default to 1.
         """
-        self._pyload["timescale"] = {"speed": speed, "pitch": pitch, "rate": rate}
+        self._payload["timescale"] = {"speed": speed, "pitch": pitch, "rate": rate}
     
     def tremolo(self, frequency: t.Union[int, float], depth: t.Union[int, float]):
         """
         Uses amplification to create a shuddering effect, where the volume quickly oscillates.
         Example: https://en.wikipedia.org/wiki/File:Fuse_Electronics_Tremolo_MK-III_Quick_Demo.ogv
         """
-        self._pyload["tremolo"] = {"frequency": frequency, "depth": depth}
+        self._payload["tremolo"] = {"frequency": frequency, "depth": depth}
     
     def vibrato(self, frequency: t.Union[int, float], depth: t.Union[int, float]):
         """
         Similar to tremolo. While tremolo oscillates the volume, vibrato oscillates the pitch.
         """
-        self._pyload["vibrato"] = {"frequency": frequency, "depth": depth}
+        self._payload["vibrato"] = {"frequency": frequency, "depth": depth}
     
     def rotation(self, rotation_hz: t.Union[int, float]):
         """
         Rotates the sound around the stereo channels/user headphones aka Audio Panning.
         It can produce an effect similar to: https://youtu.be/QB9EB8mTKcc (without the reverb)
         """
-        self._pyload["rotation"] = {"rotationHz": rotation_hz}
+        self._payload["rotation"] = {"rotationHz": rotation_hz}
 
     def distortion(self, sin_offset: t.Union[int, float], sin_scale: t.Union[int, float], cos_offset: t.Union[int, float], cos_scale: t.Union[int, float], tan_offset: t.Union[int, float], tan_scale: t.Union[int, float], offset: t.Union[int, float], scale: t.Union[int, float]):
         """
         Distortion effect. It can generate some pretty unique audio effects.
         """
-        self._pyload["distortion"] = {"sinOffset": sin_offset, "sinScale": sin_scale, "cosOffset": cos_offset, "cosScale": cos_scale, "tanOffset": tan_offset, "tanScale": tan_scale, "offset": offset, "scale": scale}
+        self._payload["distortion"] = {"sinOffset": sin_offset, "sinScale": sin_scale, "cosOffset": cos_offset, "cosScale": cos_scale, "tanOffset": tan_offset, "tanScale": tan_scale, "offset": offset, "scale": scale}
 
     def channel_mix(self, left_to_left: t.Union[int, float], left_to_right: t.Union[int, float], right_to_left: t.Union[int, float], right_to_right: t.Union[int, float]):
         """
@@ -212,10 +212,10 @@ class Filters:
 
         Setting all factors to 0.5 means both channels get the same audio.
         """
-        self._pyload["channelMix"] = {"leftToLeft": left_to_left, "leftToRight": left_to_right, "rightToLeft": right_to_left, "rightToRight": right_to_right}
+        self._payload["channelMix"] = {"leftToLeft": left_to_left, "leftToRight": left_to_right, "rightToLeft": right_to_left, "rightToRight": right_to_right}
 
     def low_pass(self, smoothing: t.Union[int, float]):
         """
         Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
         """
-        self._pyload["lowPass"] = {"smoothing": smoothing}
+        self._payload["lowPass"] = {"smoothing": smoothing}

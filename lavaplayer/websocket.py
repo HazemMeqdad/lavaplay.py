@@ -33,7 +33,7 @@ class WS:
         self.client = client
         self._headers = client._headers
         self._loop = client._loop
-        self.emitter: Emitter = client.event_manger
+        self.emitter: Emitter = client.event_manager
         self.is_connect: bool = False
     
     async def _connect(self):
@@ -57,41 +57,41 @@ class WS:
                     logging.error(msg.data)
                     break
 
-    async def callback(self, pyload: dict):
-        if pyload["op"] == "stats":
+    async def callback(self, payload: dict):
+        if payload["op"] == "stats":
             self.client.info = Info(
-                playing_players=pyload["playingPlayers"],
-                memory_used=pyload["memory"]["used"],
-                memory_free=pyload["memory"]["free"],
-                players=pyload["players"],
-                uptime=pyload["uptime"]
+                playing_players=payload["playingPlayers"],
+                memory_used=payload["memory"]["used"],
+                memory_free=payload["memory"]["free"],
+                players=payload["players"],
+                uptime=payload["uptime"]
             )
 
-        elif pyload["op"] == "playerUpdate":
+        elif payload["op"] == "playerUpdate":
             data = PlayerUpdateEvent(
-                guild_id=pyload["guildId"],
-                time=pyload["state"]["time"],
-                position=pyload["state"].get("position"),
-                connected=pyload["state"]["connected"],
+                guild_id=payload["guildId"],
+                time=payload["state"]["time"],
+                position=payload["state"].get("position"),
+                connected=payload["state"]["connected"],
             )
             self.emitter.emit("playerUpdate", data)
 
-        elif pyload["op"] == "event":
+        elif payload["op"] == "event":
 
-            if not pyload.get("track"):
+            if not payload.get("track"):
                 return
-            track = await self.client._decodetrack(pyload["track"])
-            guild_id = int(pyload["guildId"])
+            track = await self.client._decodetrack(payload["track"])
+            guild_id = int(payload["guildId"])
             try:
                 node = await self.client.get_guild_node(guild_id)
             except NodeError:
                 node = None
 
-            if pyload["type"] == "TrackStartEvent":
+            if payload["type"] == "TrackStartEvent":
                 self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
 
-            elif pyload["type"] == "TrackEndEvent":
-                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, pyload["reason"]))
+            elif payload["type"] == "TrackEndEvent":
+                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
                 if not node:
                     return
                 if not node.queue:
@@ -104,22 +104,22 @@ class WS:
                 if len(node.queue) != 0:
                     await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
-            elif pyload["type"] == "TrackExceptionEvent":
-                print(pyload)
-                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, pyload["exception"], pyload["message"], pyload["severity"], pyload["cause"]))
+            elif payload["type"] == "TrackExceptionEvent":
+                print(payload)
+                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload["exception"], payload["message"], payload["severity"], payload["cause"]))
 
-            elif pyload["type"] == "TrackStuckEvent":
-                self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, pyload["thresholdMs"]))
+            elif payload["type"] == "TrackStuckEvent":
+                self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, payload["thresholdMs"]))
 
-            elif pyload["type"] == "WebSocketClosedEvent":
-                self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, pyload["code"], pyload["reason"], pyload["byRemote"]))
+            elif payload["type"] == "WebSocketClosedEvent":
+                self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, payload["code"], payload["reason"], payload["byRemote"]))
 
     @property
     def is_connected(self) -> bool:
         return self.is_connect and self.ws.closed is False
 
-    async def send(self, pyload):  # only dict
+    async def send(self, payload):  # only dict
         if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
             return
-        await self.ws.send_json(pyload)
+        await self.ws.send_json(payload)
