@@ -19,9 +19,9 @@ class Bot(hikari.GatewayBot):
         )
         await self.lavalink.connect()
         # add lavalink events listener
-        self.lavalink.event_manger.add_listner(lavaplayer.TrackEndEvent, track_end_event)
-        self.lavalink.event_manger.add_listner(lavaplayer.TrackStartEvent, track_start_event)
-        self.lavalink.event_manger.add_listner(lavaplayer.WebSocketClosedEvent, web_soket_closed_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.TrackEndEvent, track_end_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.TrackStartEvent, track_start_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.WebSocketClosedEvent, web_socket_closed_event)
 
     # On voice state update the bot will update the lavalink node
     async def voice_state_update(self, v: hikari.VoiceStateUpdateEvent):
@@ -112,7 +112,7 @@ class Bot(hikari.GatewayBot):
             )
             await self.rest.create_message(event.get_channel(), embed=embed)
 
-        elif event.message.content == "!quene":
+        elif event.message.content == "!queue":
             node = await self.lavalink.get_guild_node(event.guild_id)
             embed = hikari.Embed(
                 description="\n".join(
@@ -131,7 +131,7 @@ class Bot(hikari.GatewayBot):
 
         elif event.message.content == "!help":
             embed = hikari.Embed(
-                description="!join, !play <query>, !stop, !pause, !resume, !seek, !volume, !destroy, !quene, !repeat"
+                description="!join, !play <query>, !stop, !pause, !resume, !seek, !volume, !destroy, !queue, !repeat"
             )
             await self.rest.create_message(event.get_channel(), embed=embed)
 
@@ -155,8 +155,8 @@ async def track_end_event(event: lavaplayer.TrackEndEvent):
 
 
 # web socket closed event
-async def web_soket_closed_event(event: lavaplayer.WebSocketClosedEvent):
-    logging.error(f"error with websoket {event.reason}")
+async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
+    logging.error(f"error with websocket {event.reason}")
 # -------------------------------- #
 
 

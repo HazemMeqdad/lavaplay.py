@@ -18,14 +18,14 @@ class Api:
     """
     def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, is_ssl: bool = False) -> None:
         self.rest_uri = f"{'https' if is_ssl else 'http'}://{host}:{port}"
-        self.herders = {
+        self.headers = {
             "Host": f"{host}:{port}",
             "Authorization": password
         }
     
     async def request(self, method: str, rout: str, data: dict = {}) -> dict:
         """
-        This function make arequest to the rest api for lavalink
+        This function makes a request to the rest api for lavalink
 
         Parameters
         ---------
@@ -36,6 +36,6 @@ class Api:
         data: :class:`dict`
             data for request
         """
-        async with aiohttp.ClientSession(headers=self.herders) as session:
+        async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.request(method, self.rest_uri + rout, data=data) as resp:
                 return await resp.json()
