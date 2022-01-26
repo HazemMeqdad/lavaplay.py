@@ -4,7 +4,7 @@ from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters, ConnectionInfo, Event
+from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent
 from lavaplayer import __version__
 import random
 
