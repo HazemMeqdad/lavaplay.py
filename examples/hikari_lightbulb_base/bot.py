@@ -25,9 +25,9 @@ class Bot(lightbulb.BotApp):
         await self.lavalink.connect()
 
         # add lavalink events listener
-        self.lavalink.event_manger.add_listner(lavaplayer.TrackEndEvent, track_end_event)
-        self.lavalink.event_manger.add_listner(lavaplayer.TrackStartEvent, track_start_event)
-        self.lavalink.event_manger.add_listner(lavaplayer.WebSocketClosedEvent, web_soket_closed_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.TrackEndEvent, track_end_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.TrackStartEvent, track_start_event)
+        self.lavalink.event_manager.add_listener(lavaplayer.WebSocketClosedEvent, web_socket_closed_event)
 
     # On voice state update the bot will update the lavalink node
     async def voice_state_update(self, v: hikari.VoiceStateUpdateEvent):
@@ -59,8 +59,8 @@ async def track_end_event(event: lavaplayer.TrackEndEvent):
 # web socket closed event
 
 
-async def web_soket_closed_event(event: lavaplayer.WebSocketClosedEvent):
-    logging.error(f"error with websoket {event.reason}")
+async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
+    logging.error(f"error with websocket {event.reason}")
 # -------------------------------- #
 
 # bot client
