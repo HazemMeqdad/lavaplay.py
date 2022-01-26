@@ -553,7 +553,7 @@ class LavalinkClient:
             raise exception(*args, **kwargs)
         self.event_manger.emit(ErrorEvent, ErrorEvent(args[0], exception))
 
-    def listner(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
+    def listen(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
         """
         The register function for listener handler
 
