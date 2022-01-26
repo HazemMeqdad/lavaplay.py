@@ -110,6 +110,15 @@ class PlayerUpdateEvent(Event):
 
 
 @dataclass
+class ErrorEvent(Event):
+    """
+    Event on error.
+    """
+    guild_id: int
+    exception: Exception
+
+
+@dataclass
 class Node:
     """
     The node is saved the queue guild list and volume and etc information.

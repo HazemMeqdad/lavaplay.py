@@ -4,7 +4,7 @@ from lavaplayer.exceptions import NodeError, VolumeError
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters, ConnectinoInfo, Event
+from .objects import Info, Track, Node, Filters, ConnectinoInfo, Event, ErrorEvent
 from lavaplayer import __version__
 import random
 
@@ -246,7 +246,7 @@ class LavalinkClient:
         """
         node = await self.get_guild_node(guild_id)
         if not node:
-            raise NodeError("Node not found", guild_id)
+            return self._raise_or_emit(NodeError, "Node not found", guild_id)
         pyload = {
             "op": "play",
             "guildId": str(guild_id),
@@ -508,8 +508,7 @@ class LavalinkClient:
         connection_info = self._voice_handlers.get(guild_id)
         if not connection_info:
             return
-        if guild_id == connection_info.guild_id:
-            await self.voice_update(guild_id, connection_info.session_id, token, endpoint, connection_info.channel_id)
+        await self.voice_update(guild_id, connection_info.session_id, token, endpoint, connection_info.channel_id)
 
     async def wait_for_connection(self, guild_id: int, /) -> t.Optional[Node]:
         """
@@ -543,6 +542,13 @@ class LavalinkClient:
             raise NodeError("Node not found", guild_id)
         while (await self.get_guild_node(guild_id)):
             await asyncio.sleep(0.1)
+
+    def _raise_or_emit(self, exception: Exception, *args, **kwargs) -> None:
+        listeners = self.event_manger.listeners
+        error_handler = [i for i in listeners if i["event"] == "ErrorEvent"]
+        if not error_handler:
+            raise exception(*args, **kwargs)
+        self.event_manger.emit(ErrorEvent, ErrorEvent(args[0], exception))
 
     def listner(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
         """
