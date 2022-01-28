@@ -17,7 +17,7 @@ class Bot(hikari.GatewayBot):
             password="youshallnotpass",  # Lavalink password
             bot_id=123,  # Lavalink bot id
         )
-        await self.lavalink.connect()
+        self.lavalink.connect()
         # add lavalink events listener
         self.lavalink.event_manager.add_listener(lavaplayer.TrackEndEvent, track_end_event)
         self.lavalink.event_manager.add_listener(lavaplayer.TrackStartEvent, track_start_event)
