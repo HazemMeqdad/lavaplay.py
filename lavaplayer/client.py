@@ -114,7 +114,7 @@ class LavalinkClient:
         await self.create_new_node(guild_id, is_connected=True)
 
     async def create_new_node(self, guild_id: int, /, is_connected: bool = False) -> Node:
-        node = Node(guild_id, [], 100)
+        node = Node(guild_id, [], 100, is_connected=is_connected)
         self._nodes[guild_id] = node
         return node
 
