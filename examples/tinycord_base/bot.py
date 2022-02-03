@@ -47,6 +47,8 @@ async def on_message(message: tinycord.Message):
             return
         await message.guild.me.voice_state.channel.disconnect()
 
+        await lavalink.wait_for_remove_connection(message.guild.id)
+
         embed = tinycord.Embed(
             description=f"done leave from <#{message.author.voice_state.channel_id}>"
         )
