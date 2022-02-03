@@ -11,7 +11,7 @@ lavalink = lavaplayer.LavalinkClient(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
-    user_id=893385351362670593,  # Lavalink bot id
+    user_id=123,  # Lavalink bot id
 )
 
 
