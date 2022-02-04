@@ -62,7 +62,7 @@ async def skip(ctx: commands.Context):
 
 @bot.command()
 async def queue(ctx: commands.Context):
-    queue = lavalink.get_queue(ctx.guild.id)
+    queue = lavalink.queue(ctx.guild.id)
     if not queue:
         return await ctx.send("No tracks in queue.")
     tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]
