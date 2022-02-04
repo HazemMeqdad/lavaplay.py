@@ -71,7 +71,7 @@ async def on_message(message: tinycord.Message):
         await lavalink.pause(message.guild_id, True)
 
         embed = tinycord.Embed(
-            description=f"done pause"
+            description="done pause"
         )
 
         await message.channel.send(embeds=[embed])
@@ -80,7 +80,7 @@ async def on_message(message: tinycord.Message):
         await lavalink.pause(message.guild_id, False)
 
         embed = tinycord.Embed(
-            description=f"done resume"
+            description="done resume"
         )
 
         await message.channel.send(embeds=[embed])
@@ -89,7 +89,7 @@ async def on_message(message: tinycord.Message):
         await lavalink.stop(message.guild_id)
 
         embed = tinycord.Embed(
-            description=f"done stop"
+            description="done stop"
         )
 
         await message.channel.send(embeds=[embed])
@@ -98,7 +98,7 @@ async def on_message(message: tinycord.Message):
         await lavalink.skip(message.guild_id)
 
         embed = tinycord.Embed(
-            description=f"done skip"
+            description="done skip"
         )
 
         await message.channel.send(embeds=[embed])
@@ -154,7 +154,7 @@ async def on_message(message: tinycord.Message):
         await node.repeat(message.guild_id, not node.repeat)
 
         embed = tinycord.Embed(
-            description=f"done repeat"
+            description="done repeat"
         )
 
         await message.channel.send(embeds=[embed])
