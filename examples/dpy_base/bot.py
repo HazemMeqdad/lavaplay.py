@@ -104,7 +104,7 @@ async def on_socket_raw_receive(data):
     data = json.loads(data)
 
     if not data or not data["t"]:
-                return
+        return
     if data["t"] == "VOICE_SERVER_UPDATE":
         guild_id = int(data["d"]["guild_id"])
         endpoint = data["d"]["endpoint"]

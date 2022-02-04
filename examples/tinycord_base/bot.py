@@ -114,19 +114,19 @@ async def on_message(message: tinycord.Message):
         await message.channel.send(embeds=[embed])
 
     if message.content.startswith('!volume'):
-            try:
-                vol = int(message.content.split(" ")[1])
-            except IndexError:
-                return await message.channel.send("Please specify a volume")
-            except ValueError:
-                return await message.channel.send("Please specify a valid volume")
+        try:
+            vol = int(message.content.split(" ")[1])
+        except IndexError:
+            return await message.channel.send("Please specify a volume")
+        except ValueError:
+            return await message.channel.send("Please specify a valid volume")
 
-            await lavalink.volume(message.guild.id, vol)
-            embed = tinycord.Embed(
-                description=f"volume choose to {vol}%"
-            )
-            
-            await message.channel.send(embeds=[embed])
+        await lavalink.volume(message.guild.id, vol)
+        embed = tinycord.Embed(
+            description=f"volume choose to {vol}%"
+        )
+        
+        await message.channel.send(embeds=[embed])
 
     if message.content.startswith('!seek'):
         await lavalink.seek(message.guild.id, int(message.content.replace('!seek', '')))
