@@ -38,7 +38,6 @@ class WS:
     
     async def _connect(self):
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
-            self.client.session = session
             self.session = session
             try:
                 self.ws = await self.session.ws_connect(self.ws_url)
