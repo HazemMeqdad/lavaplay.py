@@ -33,7 +33,7 @@ async def on_voice_state_update(guild, before, after: tinycord.Voicestate):
 async def on_message(message: tinycord.Message):
     if message.content == '!join':
 
-        if message.guild.me.voice_state != None:
+        if message.guild.me.voice_state is not None:
             return
 
         await message.author.voice_state.channel.connect()
@@ -43,7 +43,7 @@ async def on_message(message: tinycord.Message):
         await message.channel.send(embeds=[embed])
     
     if message.content == '!leave':
-        if message.guild.me.voice_state == None:
+        if message.guild.me.voice_state is None:
             return
         await message.guild.me.voice_state.channel.disconnect()
 
