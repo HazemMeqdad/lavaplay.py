@@ -1,10 +1,10 @@
 import asyncio
 import typing as t
-from lavaplayer.exceptions import NodeError, VolumeError
+from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
-from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent
+from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent, PlayList
 from lavaplayer import __version__
 import random
 
@@ -118,7 +118,7 @@ class LavalinkClient:
         self._nodes[guild_id] = node
         return node
 
-    async def search_youtube(self, query: str) -> t.Optional[t.List[Track]]:
+    async def search_youtube(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
         Search for tracks with youtube.
 
@@ -130,9 +130,11 @@ class LavalinkClient:
         result = await self._api.request("GET", "/loadtracks", data={"identifier": f"ytsearch:{query}"})
         if result["loadType"] == "NO_MATCHES":
             return []
+        if result["loadType"] == "LOAD_FAILED":
+            return None
         return self._prossing_tracks(result["tracks"])
 
-    async def get_tracks(self, query: str) -> t.Optional[t.List[Track]]:
+    async def get_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
         Load tracks for unknow sits or youtube or soundcloud or radio.
 
@@ -144,6 +146,10 @@ class LavalinkClient:
         result = await self._api.request("GET", "/loadtracks", data={"identifier": query})
         if result["loadType"] == "NO_MATCHES":
             return []
+        if result["loadType"] == "LOAD_FAILED":
+            raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        if result["loadType"] == "PLAYLIST_LOADED":
+            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], self._prossing_tracks(result["tracks"]))
         return self._prossing_tracks(result["tracks"])
 
     async def _decodetrack(self, track: str) -> Track:
@@ -154,7 +160,7 @@ class LavalinkClient:
         result = await self._api.request("POST", "/decodetrack", json=tracks)
         return self._prossing_tracks(result)
 
-    async def auto_search_tracks(self, query: str) -> t.Optional[t.List[Track]]:
+    async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
         Load tracks for youtube search or other urls.
 

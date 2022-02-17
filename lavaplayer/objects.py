@@ -139,7 +139,14 @@ class ConnectionInfo:
     guild_id: int
     session_id: str
     channel_id: t.Optional[int]
-    
+
+
+@dataclass
+class PlayList:
+    name: str
+    selected_track: int
+    tracks: t.List[Track]
+
     
 @dataclass(init=True)
 class Filters:
