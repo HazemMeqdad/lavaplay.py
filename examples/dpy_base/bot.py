@@ -33,12 +33,25 @@ async def leave(ctx: commands.Context):
 
 @bot.command()
 async def play(ctx: commands.Context, *, query: str):
-    tracks = await lavalink.auto_search_tracks(query)
+    try:
+        tracks = await lavalink.auto_search_tracks(query)
+    except lavaplayer.TrackLoadFailed as exc:
+        return await ctx.send(exc.message)
+
     if not tracks:
         return await ctx.send("No results found.")
+
+    # Playlist
+    if isinstance(tracks, lavaplayer.PlayList):
+        msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
+        await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
+        await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
+        return
+
     track = tracks[0]
     await lavalink.play(ctx.guild.id, track, ctx.author.id)
     await ctx.send(f"Now playing: {track.title}")
+
 
 @bot.command()
 async def pause(ctx: commands.Context):
