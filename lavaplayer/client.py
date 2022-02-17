@@ -173,6 +173,27 @@ class LavalinkClient:
             return await self.get_tracks(query)
         return await self.search_youtube(query)
 
+    async def add_to_queue(self, guild_id: int, /, tracks: t.List[Track], requester: t.Optional[int] = None) -> None:
+        """
+        Add tracks to queue. use to load a playlist result.
+
+        >>> playlist = await lavaplayer.search_youtube("playlist url")
+        >>> await lavaplayer.add_to_queue(guild_id, playlist.tracks)
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        tracks: :class:`list`
+            tracks to add to queue
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+
+        for track in tracks:
+            self._loop.create_task(self.play(guild_id, track, requester))
+
     async def get_guild_node(self, guild_id: int, /) -> t.Optional[Node]:
         """
         Get guild info from node cache memory.
@@ -236,7 +257,7 @@ class LavalinkClient:
         node.repeat = stats
         await self.set_guild_node(guild_id, node)
 
-    async def play(self, guild_id: int, /, track: Track, requester: int, start: bool = False) -> None:
+    async def play(self, guild_id: int, /, track: Track, requester: t.Optional[int] = None, start: bool = False) -> None:
         """
         Play track or add to the queue list.
 
