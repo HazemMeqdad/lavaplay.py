@@ -126,6 +126,11 @@ class LavalinkClient:
         ---------
         query: :class:`str`
             words for search with youtube. if not found result retrun empty :class:`list`
+        
+        Exceptions
+        ----------
+        :class:`lavaplayer.exceptions.TrackLoadFailed`
+            If the track could not be loaded.
         """
         result = await self._api.request("GET", "/loadtracks", data={"identifier": f"ytsearch:{query}"})
         if result["loadType"] == "NO_MATCHES":
@@ -142,6 +147,11 @@ class LavalinkClient:
         ---------
         query: :class:`str`
             track url, if not found result retrun empty :class:`list`
+        
+        Exceptions
+        ----------
+        :class:`lavaplayer.exceptions.TrackLoadFailed`
+            If the track could not be loaded.
         """
         result = await self._api.request("GET", "/loadtracks", data={"identifier": query})
         if result["loadType"] == "NO_MATCHES":
@@ -168,6 +178,11 @@ class LavalinkClient:
         ---------
         query: :class:`str`
             url or words to search, if not found result retrun empty :class:`list`
+
+        Exceptions
+        ----------
+        :class:`lavaplayer.exceptions.TrackLoadFailed`
+            If the track could not be loaded.
         """
         if "http" in query:
             return await self.get_tracks(query)
