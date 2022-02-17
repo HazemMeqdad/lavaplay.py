@@ -30,7 +30,14 @@ async def track_end_event(event: lavaplayer.TrackEndEvent):
 async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
     logging.error(f"error with websocket {event.reason}")
 
+# On voice state update the bot will update the lavalink node
+@bot.listen(hikari.VoiceStateUpdateEvent)
+async def voice_state_update(event: hikari.VoiceStateUpdateEvent):
+    await lavalink.raw_voice_state_update(event.guild_id, event.state.user_id, event.state.session_id, event.state.channel_id)
 
+@bot.listen(hikari.VoiceServerUpdateEvent)
+async def voice_server_update(event: hikari.VoiceServerUpdateEvent):
+    await lavalink.raw_voice_server_update(event.guild_id, event.endpoint, event.token)
 
 implements = [lightbulb.commands.PrefixCommand] if not SLASH_COMMAND else [lightbulb.commands.PrefixCommand, lightbulb.commands.SlashCommand]
 
