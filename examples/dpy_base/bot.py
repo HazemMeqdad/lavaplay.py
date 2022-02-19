@@ -111,7 +111,7 @@ async def repeat(ctx: commands.Context, stats: bool):
     await lavalink.repeat(ctx.guild.id, stats)
     await ctx.send("Repeated the queue.")
     
-@bot.command(aliase['filter'])
+@bot.command(aliases=['filter'])
 async def _filter(ctx: commands.Context):
     filters = lavaplayer.Filters()
     filters.rotation(0.2)
