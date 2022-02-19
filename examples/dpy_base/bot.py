@@ -110,13 +110,6 @@ async def clear(ctx: commands.Context):
 async def repeat(ctx: commands.Context, stats: bool):
     await lavalink.repeat(ctx.guild.id, stats)
     await ctx.send("Repeated the queue.")
-
-@bot.command()
-async def filter(ctx: commands.Context):
-    filters = lavaplayer.Filters()
-    filters.rotation(0.2)
-    await lavalink.filters(ctx.guild.id, filters)
-    await ctx.send("Filter applied.")
     
 @bot.event
 async def on_socket_raw_receive(data):
