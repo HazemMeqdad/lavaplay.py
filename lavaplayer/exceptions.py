@@ -1,4 +1,3 @@
-
 class NodeError(Exception):
     """
     A error for node.
@@ -27,6 +26,27 @@ class NodeError(Exception):
         A guild id.
         """
         return self._guild_id
+
+
+class FiltersError(Exception):
+    """
+    A error for all filters.
+
+    Parameters
+    ----------
+    message: :class:`str`
+        the error message
+    """
+
+    def __init__(self, message: str) -> None:
+        self._message = message
+
+    @property
+    def message(self):
+        """
+        A error message.
+        """
+        return self._message
 
 
 class VolumeError(Exception):
