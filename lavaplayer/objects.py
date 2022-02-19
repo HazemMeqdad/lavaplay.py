@@ -163,7 +163,7 @@ class Filters:
     def __init__(self, volume: t.Union[int, float] = 1.0) -> None:
         self._payload: dict = {"op": "filters", "volume": volume}
     
-    def equalizer(self, band: t.Union[int, float], gain: t.Union[int, float]):
+    def equalizer(self, bands: t.List[t.Dict[int, float]]):
         """
         There are 15 bands (0-14) that can be changed.
 
@@ -171,7 +171,7 @@ class Filters:
         where -0.25 means the given band is completely muted, and 0.25 means it is doubled. Modifying the gain could
         also change the volume of the output.
         """
-        self._payload["equalizer"] = [{"band": band, "gain": gain}]
+        self._payload["equalizer"] = bands
     
     def karaoke(self, level: t.Union[int, float], mono_level: t.Union[int, float], filter_band: t.Union[int, float], filter_width: t.Union[int, float]):
         """
