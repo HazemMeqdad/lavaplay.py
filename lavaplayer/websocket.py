@@ -119,6 +119,6 @@ class WS:
 
     async def send(self, payload):  # only dict
         if not self.is_connected:
-            _LOGGER.error("Not connected to websocket")
+            self._loop.create_task(self._connect())
             return
         await self.ws.send_json(payload)
