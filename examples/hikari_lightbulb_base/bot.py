@@ -67,6 +67,13 @@ async def play_command(ctx: lightbulb.context.Context):
     if not result:
         await ctx.respond("not found result for your query")
         return
+    
+    # Playlist
+    if isinstance(result, lavaplayer.PlayList):
+        await lavalink.add_to_queue(ctx.guild_id, result.tracks, ctx.author.id)
+        await ctx.respond(f"added {len(result.tracks)} tracks to queue")
+        return 
+
     await lavalink.play(ctx.guild_id, result[0], ctx.author.id)  # play the first result
     await ctx.respond(f"[{result[0].title}]({result[0].uri})")  # send the embed
 

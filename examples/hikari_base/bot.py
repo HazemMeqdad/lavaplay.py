@@ -55,7 +55,7 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         try:
             result = await lavalink.auto_search_tracks(event.content.removeprefix(f"{PREFIX}play "))
         except lavaplayer.TrackLoadFailed as exc:
-            return await event.message.respond(f"Error loading track: {exc}") 
+            return await event.message.respond(f"Error loading track: {exc.message}") 
         if not result:
             await event.message.respond("No results found.")
             return
