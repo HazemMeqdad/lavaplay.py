@@ -52,11 +52,7 @@ class WS:
                     await self._connect()
                     return
                 elif isinstance(error, aiohttp.WSServerHandshakeError):
-<<<<<<< HEAD
                     if error.code in (403, 401):  # Unauthorized or Forbidden
-=======
-                    if error.code == 401 or error.code == 403:  # Unauthorized or Forbidden
->>>>>>> 2e0b0831b28a088acaa0e3c4b72c7422a6aa8ba3
                         _LOGGER.warning("Password authentication failed - closing websocket")
                         return
                     _LOGGER.warning("Please check your websocket port - closing websocket")
