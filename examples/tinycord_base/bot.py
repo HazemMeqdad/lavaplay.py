@@ -38,7 +38,7 @@ async def on_message(message: tinycord.Message):
 
         await message.author.voice_state.channel.connect()
         embed = tinycord.Embed(
-            description=f"done join to <#{message.author.voice_state.channel_id}>"
+            description=f"Joined <#{message.author.voice_state.channel_id}>"
         )
         await message.channel.send(embeds=[embed])
     
@@ -50,19 +50,30 @@ async def on_message(message: tinycord.Message):
         await lavalink.wait_for_remove_connection(message.guild.id)
 
         embed = tinycord.Embed(
-            description=f"done leave from <#{message.author.voice_state.channel_id}>"
+            description="The bot has left the voice channel"
         )
 
         await message.channel.send(embeds=[embed])
 
     if message.content.startswith('!play'):
-        track = await lavalink.auto_search_tracks(
-            message.content.replace('!play', ''))
+        try:
+            result = await lavalink.auto_search_tracks(message.content.removeprefix('!play '))
+        except lavaplayer.TrackLoadFailed as exc:
+            return await message.channel.send(f"Error loading track: {exc.message}")
+        
+        if not result:
+            await message.channel.send("No results found.")
+            return
 
-        await lavalink.play(message.guild_id, track[0], message.author.id)
+        if isinstance(result, lavaplayer.PlayList):
+            await lavalink.add_to_queue(message.guild_id, result.tracks, message.author.id)
+            await message.channel.send(f"added {len(result.tracks)} tracks to queue")
+            return 
+
+        await lavalink.play(message.guild_id, result[0], message.author.id)
 
         embed = tinycord.Embed(
-            description=f"done play <{track[0].title}>"
+            description=f"done play <{result[0].title}>"
         )
 
         await message.channel.send(embeds=[embed])
@@ -139,7 +150,7 @@ async def on_message(message: tinycord.Message):
 
     if message.content.startswith('!filter'):
         filters = lavaplayer.Filters()
-        filters.lowPass(50)
+        filters.low_pass(50)
         await lavalink.filters(message.guild_id, filters)
 
 

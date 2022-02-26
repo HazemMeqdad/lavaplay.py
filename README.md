@@ -40,10 +40,7 @@ lavalink = lavaplayer.LavalinkClient(
     bot_id=123
 )
 
-@bot.listen(hikari.ShardReadyEvent)
-async def start_lavalink(event):
-    await lavalink.connect()
-
+lavalink.connect()
 bot.run()
 ```
 
@@ -81,6 +78,3 @@ $ pip3 install -U lavaplayer
 # Windows
 $ pip install -U lavaplayer
 ```
-
-
-

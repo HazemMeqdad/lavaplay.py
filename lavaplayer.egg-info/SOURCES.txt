@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+lavaplayer/__init__.py
+lavaplayer/api.py
+lavaplayer/client.py
+lavaplayer/emitter.py
+lavaplayer/exceptions.py
+lavaplayer/objects.py
+lavaplayer/websocket.py
+lavaplayer.egg-info/PKG-INFO
+lavaplayer.egg-info/SOURCES.txt
+lavaplayer.egg-info/dependency_links.txt
+lavaplayer.egg-info/requires.txt
+lavaplayer.egg-info/top_level.txt

@@ -54,13 +54,13 @@ async def play(ctx: commands.Context, *, query: str):
 
 
 @bot.command()
-async def pause(ctx: commands.Context, stats: bool):
-    await lavalink.pause(ctx.guild.id, stats)
+async def pause(ctx: commands.Context):
+    await lavalink.pause(ctx.guild.id, True)
     await ctx.send("Paused the track.")
 
 @bot.command()
 async def resume(ctx: commands.Context):
-    await lavalink.resume(ctx.guild.id)
+    await lavalink.pause(ctx.guild.id, False)
     await ctx.send("Resumed the track.")
 
 @bot.command()
@@ -107,12 +107,12 @@ async def clear(ctx: commands.Context):
     await ctx.send("Cleared the queue.")
 
 @bot.command()
-async def repeat(ctx: commands.Context, stats: bool):
-    await lavalink.repeat(ctx.guild.id, stats)
+async def repeat(ctx: commands.Context):
+    await lavalink.repeat(ctx.guild.id, True)
     await ctx.send("Repeated the queue.")
     
-@bot.command()
-async def filter(ctx: commands.Context):
+@bot.command(aliases=['filter'])
+async def _filter(ctx: commands.Context):
     filters = lavaplayer.Filters()
     filters.rotation(0.2)
     await lavalink.filters(ctx.guild.id, filters)

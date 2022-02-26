@@ -164,7 +164,7 @@ class Filters:
     def __init__(self, volume: t.Union[int, float] = 1.0) -> None:
         self._payload: dict = {"op": "filters", "volume": volume}
     
-    def equalizer(self, bands: List[Dict[int, Union[float]]]):
+    def equalizer(self, bands: t.List[t.Dict[int, t.Union[float, int]]]):
         """
         There are 15 bands (0-14) that can be changed.
 
