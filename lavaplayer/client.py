@@ -1,6 +1,8 @@
 import asyncio
 import typing as t
 from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
+from typing import Dict
+
 from .emitter import Emitter
 from .websocket import WS
 from .api import Api
@@ -58,8 +60,8 @@ class LavalinkClient:
         self.password = password
         self.user_id = user_id
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
-        self._nodes: dict[int, Track] = {}
-        self._voice_handlers: dict[int, ConnectionInfo] = {}
+        self._nodes: Dict[int, Node] = {}
+        self._voice_handlers: Dict[int, ConnectionInfo] = {}
 
     def _prossing_tracks(self, tracks: list) -> t.List[Track]:
         _tracks = []
@@ -624,3 +626,7 @@ class LavalinkClient:
         Connect to the lavalink websocket
         """
         self._loop.create_task(self._ws._connect())
+
+    @property
+    def nodes(self):
+        return self._nodes
