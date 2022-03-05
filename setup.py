@@ -8,8 +8,8 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='lavaplayer',
-    version='1.0.5a',
-    description='A sample Python project',
+    version='1.0.7a',
+    description='Its a lavalink nodes manger to make a music bots for discord with python.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/HazemMeqdad/lavaplayer',

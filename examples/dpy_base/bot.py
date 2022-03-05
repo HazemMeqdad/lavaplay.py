@@ -33,21 +33,34 @@ async def leave(ctx: commands.Context):
 
 @bot.command()
 async def play(ctx: commands.Context, *, query: str):
-    tracks = await lavalink.auto_search_tracks(query)
+    try:
+        tracks = await lavalink.auto_search_tracks(query)
+    except lavaplayer.TrackLoadFailed as exc:
+        return await ctx.send(exc.message)
+
     if not tracks:
         return await ctx.send("No results found.")
+
+    # Playlist
+    if isinstance(tracks, lavaplayer.PlayList):
+        msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
+        await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
+        await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
+        return
+
     track = tracks[0]
     await lavalink.play(ctx.guild.id, track, ctx.author.id)
     await ctx.send(f"Now playing: {track.title}")
 
+
 @bot.command()
 async def pause(ctx: commands.Context):
-    await lavalink.pause(ctx.guild.id)
+    await lavalink.pause(ctx.guild.id, True)
     await ctx.send("Paused the track.")
 
 @bot.command()
 async def resume(ctx: commands.Context):
-    await lavalink.resume(ctx.guild.id)
+    await lavalink.pause(ctx.guild.id, False)
     await ctx.send("Resumed the track.")
 
 @bot.command()
@@ -62,7 +75,7 @@ async def skip(ctx: commands.Context):
 
 @bot.command()
 async def queue(ctx: commands.Context):
-    queue = lavalink.get_queue(ctx.guild.id)
+    queue = lavalink.queue(ctx.guild.id)
     if not queue:
         return await ctx.send("No tracks in queue.")
     tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]
@@ -95,16 +108,22 @@ async def clear(ctx: commands.Context):
 
 @bot.command()
 async def repeat(ctx: commands.Context):
-    await lavalink.repeat(ctx.guild.id)
+    await lavalink.repeat(ctx.guild.id, True)
     await ctx.send("Repeated the queue.")
-
-
+    
+@bot.command(aliases=['filter'])
+async def _filter(ctx: commands.Context):
+    filters = lavaplayer.Filters()
+    filters.rotation(0.2)
+    await lavalink.filters(ctx.guild.id, filters)
+    await ctx.send("Filter applied.")
+    
 @bot.event
 async def on_socket_raw_receive(data):
     data = json.loads(data)
 
     if not data or not data["t"]:
-                return
+        return
     if data["t"] == "VOICE_SERVER_UPDATE":
         guild_id = int(data["d"]["guild_id"])
         endpoint = data["d"]["endpoint"]

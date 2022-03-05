@@ -1,3 +1,4 @@
+import asyncio
 import aiohttp
 import logging
 from lavaplayer.exceptions import NodeError
@@ -38,24 +39,50 @@ class WS:
     
     async def _connect(self):
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
-            self.client.session = session
             self.session = session
             try:
                 self.ws = await self.session.ws_connect(self.ws_url)
-            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError, aiohttp.ClientConnectorError) as error:
-                _LOGGER.error(f"Could not connect to websocket: {error}")
-                return
+                if session is None:
+                    await self.check_connection()
+            except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError) as error:
+                
+                if isinstance(error, aiohttp.ClientConnectorError):
+                    _LOGGER.error(f"Could not connect to websocket: {error}")
+                    _LOGGER.warning("Reconnecting to websocket after 10 seconds")  
+                    await asyncio.sleep(10)
+                    await self._connect()
+                    return
+                elif isinstance(error, aiohttp.WSServerHandshakeError):
+                    if error.status in (403, 401):  # Unauthorized or Forbidden
+                        _LOGGER.warning("Password authentication failed - closing websocket")
+                        return
+                    _LOGGER.warning("Please check your websocket port - closing websocket")
+                elif isinstance(error, aiohttp.ServerDisconnectedError):
+                    _LOGGER.error(f"Could not connect to websocket: {error}")
+                    _LOGGER.warning("Reconnecting to websocket after 10 seconds")
+                    await asyncio.sleep(10)
+                    await self._connect()
+                    return
+
             _LOGGER.info("Connected to websocket")
             self.is_connect = True
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     await self.callback(msg.json())
                 elif msg.type == aiohttp.WSMsgType.CLOSED:
-                    logging.error("close")
+                    _LOGGER.error("Websocket closed")
                     break
                 elif msg.type == aiohttp.WSMsgType.ERROR:
-                    logging.error(msg.data)
+                    _LOGGER.error(msg.data)
                     break
+
+    async def check_connection(self):
+        while self.ws.closed is None or not self.ws.closed or not self.is_connected:
+            _LOGGER.warning("Websocket closed unexpectedly - reconnecting in 10 seconds")
+            if self.client.nodes:
+                self.client.nodes.clear()
+            await asyncio.sleep(10)
+            await self._connect()
 
     async def callback(self, payload: dict):
         if payload["op"] == "stats":
@@ -105,7 +132,6 @@ class WS:
                     await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
             elif payload["type"] == "TrackExceptionEvent":
-                print(payload)
                 self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload["exception"], payload["message"], payload["severity"], payload["cause"]))
 
             elif payload["type"] == "TrackStuckEvent":
@@ -121,5 +147,6 @@ class WS:
     async def send(self, payload):  # only dict
         if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
+            await self.check_connection()
             return
         await self.ws.send_json(payload)

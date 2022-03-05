@@ -1,4 +1,3 @@
-
 class NodeError(Exception):
     """
     A error for node.
@@ -27,6 +26,27 @@ class NodeError(Exception):
         A guild id.
         """
         return self._guild_id
+
+
+class FiltersError(Exception):
+    """
+    A error for all filters.
+
+    Parameters
+    ----------
+    message: :class:`str`
+        the error message
+    """
+
+    def __init__(self, message: str) -> None:
+        self._message = message
+
+    @property
+    def message(self):
+        """
+        A error message.
+        """
+        return self._message
 
 
 class VolumeError(Exception):
@@ -92,3 +112,33 @@ class ConnectedError(Exception):
         A error message.
         """
         return self._message
+
+
+class TrackLoadFailed(Exception):
+    """
+    A error for track load failed.
+    
+    Parameters
+    ----------
+    message: :class:`str`
+        the error message
+    severity: :class:`str`
+        gets the severity level of the track loading failure
+    """
+    def __init__(self, message: str, severity: str) -> None:
+        self._message = message
+        self._severity = severity
+
+    @property
+    def message(self):
+        """
+        A error message.
+        """
+        return self._message
+
+    @property
+    def severity(self):
+        """
+        A severity level. Can be one of: ``'CRITICAL'``, ``'ERROR'``, ``'WARNING'``, ``'INFO'``, ``'DEBUG'``. 
+        """
+        return self._severity

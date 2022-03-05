@@ -40,10 +40,7 @@ lavalink = lavaplayer.LavalinkClient(
     bot_id=123
 )
 
-@bot.listen(hikari.ShardReadyEvent)
-async def start_lavalink(event):
-    await lavalink.connect()
-
+lavalink.connect()
 bot.run()
 ```
 
@@ -69,8 +66,8 @@ await lavalink.volume(guild_id, volume)
 
 - [ ] Spotify support
 - [x] connection handler
-- [ ] Support youtube playlist
-- [ ] Add example for other discord wrapper library
+- [x] Support youtube playlist
+- [x] Add example for other discord wrapper library
 
 # Installation
 
@@ -81,6 +78,3 @@ $ pip3 install -U lavaplayer
 # Windows
 $ pip install -U lavaplayer
 ```
-
-
-
