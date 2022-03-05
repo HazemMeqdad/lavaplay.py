@@ -155,6 +155,3 @@ class WS:
             _LOGGER.error("ConnectionResetError: Cannot write to closing transport")
             await self.check_connection()
             return
-        except:
-            raise
-
