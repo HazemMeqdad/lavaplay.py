@@ -149,4 +149,9 @@ class WS:
             _LOGGER.error("Not connected to websocket")
             await self.check_connection()
             return
-        await self.ws.send_json(payload)
+        try:
+            await self.ws.send_json(payload)
+        except ConnectionResetError:
+            _LOGGER.error("ConnectionResetError: Cannot write to closing transport")
+            await self.check_connection()
+            return
