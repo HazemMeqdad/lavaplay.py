@@ -85,6 +85,7 @@ class WS:
             await self._connect()
 
     async def callback(self, payload: dict):
+        print(payload)
         if payload["op"] == "stats":
             self.client.info = Info(
                 playing_players=payload["playingPlayers"],
@@ -94,14 +95,20 @@ class WS:
                 uptime=payload["uptime"]
             )
 
-        elif payload["op"] == "PlayerUpdateEvent":
+        elif payload["op"] == "playerUpdate":
+            guild_id = int(payload["guildId"])
+            node = await self.client.get_guild_node(guild_id)
+            position = payload["state"].get("position")
+            if node.queue:
+                node.queue[0].position = position / 1000
+                await self.client.set_guild_node(guild_id, node)
             data = PlayerUpdateEvent(
-                guild_id=payload["guildId"],
+                guild_id=guild_id,
                 time=payload["state"]["time"],
-                position=payload["state"].get("position"),
+                position=position / 1000 if isinstance(position, int) else None,
                 connected=payload["state"]["connected"],
             )
-            self.emitter.emit("playerUpdate", data)
+            self.emitter.emit("playerUpdateEvent", data)
 
         elif payload["op"] == "event":
 
