@@ -85,7 +85,6 @@ class WS:
             await self._connect()
 
     async def callback(self, payload: dict):
-        print(payload)
         if payload["op"] == "stats":
             self.client.info = Info(
                 playing_players=payload["playingPlayers"],
