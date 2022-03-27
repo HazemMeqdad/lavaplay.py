@@ -94,7 +94,7 @@ class WS:
                 uptime=payload["uptime"]
             )
 
-        elif payload["op"] == "playerUpdate":
+        elif payload["op"] == "PlayerUpdateEvent":
             data = PlayerUpdateEvent(
                 guild_id=payload["guildId"],
                 time=payload["state"]["time"],
