@@ -76,8 +76,8 @@ class LavalinkClient:
                     length=info["length"],
                     isStream=info["isStream"],
                     position=info["position"],
-                    sourceName=info["sourceName"],
-                    title=info["title"],
+                    sourceName=info.get("sourceName", None),
+                    title=info.get("title", None),
                     uri=info["uri"]
                 )
             )

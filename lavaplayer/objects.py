@@ -33,10 +33,10 @@ class Track:
     length: int
     isStream: bool
     position: int
-    sourceName: str
     title: str
     uri: str
     requester: t.Union[str, None] = None
+    sourceName: t.Optional[str] = None
     """
     optional option to save a requester for the track
     """
@@ -106,8 +106,8 @@ class PlayerUpdateEvent(Event):
     """
     guild_id: int
     time: int
-    position: t.Union[int, None]
-    connected: bool
+    position: t.Optional[int]
+    connected: t.Optional[bool]
 
 
 @dataclass

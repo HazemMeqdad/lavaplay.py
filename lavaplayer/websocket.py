@@ -105,7 +105,7 @@ class WS:
                 guild_id=guild_id,
                 time=payload["state"]["time"],
                 position=position / 1000 if isinstance(position, int) else None,
-                connected=payload["state"]["connected"],
+                connected=payload["state"].get("connected", None),
             )
             self.emitter.emit("playerUpdateEvent", data)
 
