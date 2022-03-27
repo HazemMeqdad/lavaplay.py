@@ -130,7 +130,7 @@ dmypy.json
 /logs
 application.yml
 *.jar
-test.py
+test*.py
 token.txt
 .vscode/
 tasks.txt
