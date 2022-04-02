@@ -74,7 +74,7 @@ class TrackExceptionEvent(Event):
     exception: str
     message: t.Optional[str]
     severity: t.Optional[str]
-    cause: str
+    cause: t.Optional[str]
 
 
 @dataclass
