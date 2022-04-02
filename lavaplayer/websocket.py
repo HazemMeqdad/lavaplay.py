@@ -138,7 +138,7 @@ class WS:
                     await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
             elif payload["type"] == "TrackExceptionEvent":
-                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload["exception"], payload["message"], payload["severity"], payload["cause"]))
+                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload["exception"], payload.get("message"), payload["severity"], payload["cause"]))
 
             elif payload["type"] == "TrackStuckEvent":
                 self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, payload["thresholdMs"]))
