@@ -15,6 +15,13 @@ lavalink = lavaplayer.LavalinkClient(
 
 
 @bot.event
+async def close():
+	for guild in bot.guilds:
+		await guild.change_voice_state(channel=None)
+
+	print(Fore.GREEN + 'Shut down...')
+
+@bot.event
 async def on_ready():
     print("Bot is ready.")
 
