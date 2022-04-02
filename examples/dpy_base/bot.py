@@ -119,8 +119,7 @@ async def _filter(ctx: commands.Context):
     await ctx.send("Filter applied.")
     
 @bot.event
-async def on_socket_raw_receive(data):
-    data = json.loads(data)
+async def on_socket_response(data):
 
     if not data or not data["t"]:
         return
