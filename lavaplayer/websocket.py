@@ -98,6 +98,9 @@ class WS:
             guild_id = int(payload["guildId"])
             node = await self.client.get_guild_node(guild_id)
             position = payload["state"].get("position")
+            if node is None:
+                return
+            
             if node.queue:
                 node.queue[0].position = position / 1000
                 await self.client.set_guild_node(guild_id, node)
