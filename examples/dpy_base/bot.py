@@ -19,7 +19,7 @@ async def close():
 	for guild in bot.guilds:
 		await guild.change_voice_state(channel=None)
 
-	print('Shut down...')
+	print('Shutdown...')
 
 @bot.event
 async def on_ready():
