@@ -111,7 +111,7 @@ async def play(ctx: "tinycord.Interaction") -> None:
 
     if isinstance(result, lavaplayer.PlayList):
         await lavalink.add_to_queue(ctx.guild_id, result.tracks, ctx.user.id)
-        """Play a playlist"""
+        # Play a playlist
 
     queue = await lavalink.queue(ctx.guild_id)
     if len(queue) == 0:
@@ -127,7 +127,11 @@ async def play(ctx: "tinycord.Interaction") -> None:
         color=0x00ff00
     )
 
-    embed.add_field('Duration', datetime.timedelta(seconds=result[0].length).__str__(), inline=True) # need to fix this
+    embed.add_field(
+        'Duration', 
+        datetime.timedelta(seconds=result[0].length).__str__(), 
+        inline=True
+    ) # need to fix this
     embed.add_field('Author', result[0].author, inline=True)
     embed.add_field('Requester', ctx.user.username, inline=True)
 
@@ -223,7 +227,7 @@ async def queue(ctx: "tinycord.Interaction") -> None:
         ))
 
     queue = await lavalink.queue(ctx.guild_id)
-    """Get the current queue"""
+    # Get the current queue
 
     embed = tinycord.Embed(
         description="\n".join(
@@ -348,7 +352,11 @@ async def nowplaying(ctx: "tinycord.Interaction") -> None:
     embed.set_footer(
         text=f"Requested by {ctx.user.username}"
     )
-    embed.add_field('Duration', datetime.timedelta(seconds=song.length).__str__(), inline=True) # need to fix this
+    embed.add_field(
+        'Duration', 
+        datetime.timedelta(seconds=song.length).__str__(), 
+        inline=True
+    ) # need to fix this
     embed.add_field('Author', song.author, inline=True)
     embed.add_field('Requester', requester.username, inline=True)
 
