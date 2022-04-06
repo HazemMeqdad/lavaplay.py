@@ -102,7 +102,7 @@ async def play(ctx: "tinycord.Interaction") -> None:
     song = ctx.get_option("song").value
 
     result = await lavalink.auto_search_tracks(song)
-    """Play a song"""
+    # Play a song
 
     if len(result) == 0:
         await ctx.reply(4, tinycord.MessageCallback(
@@ -336,7 +336,7 @@ async def nowplaying(ctx: "tinycord.Interaction") -> None:
         ))
 
     node = await lavalink.get_guild_node(ctx.guild_id)
-    """Get the current node"""
+    # Get the current node
 
     if len(node.queue) == 0:
         await ctx.reply(4, tinycord.MessageCallback(
