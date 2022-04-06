@@ -57,7 +57,7 @@ async def join(ctx: "tinycord.Interaction") -> None:
         ))
 
     await channel.connect(self_deaf=True)
-    """Join a voice channel"""
+    # Join a voice channel
 
     await ctx.reply(4, tinycord.MessageCallback(
         content="Joined the voice channel"
@@ -71,7 +71,7 @@ async def leave(ctx: "tinycord.Interaction") -> None:
         ))
 
     await ctx.guild.me.voice_state.channel.disconnect()
-    """Leave the voice channel"""
+    # Leave the voice channel
 
     await ctx.reply(4, tinycord.MessageCallback(
         content="I have left the voice channel"
@@ -131,7 +131,7 @@ async def play(ctx: "tinycord.Interaction") -> None:
         'Duration', 
         datetime.timedelta(seconds=result[0].length).__str__(), 
         inline=True
-    ) # need to fix this
+    )
     embed.add_field('Author', result[0].author, inline=True)
     embed.add_field('Requester', ctx.user.username, inline=True)
 
@@ -356,7 +356,7 @@ async def nowplaying(ctx: "tinycord.Interaction") -> None:
         'Duration', 
         datetime.timedelta(seconds=song.length).__str__(), 
         inline=True
-    ) # need to fix this
+    )
     embed.add_field('Author', song.author, inline=True)
     embed.add_field('Requester', requester.username, inline=True)
 
