@@ -1,14 +1,18 @@
-
-import json
 import discord
 from discord.ext import commands
+import json
 import lavaplayer
 
 PREFIX = ","
 TOKEN = "..."
 
 bot = commands.Bot(PREFIX, enable_debug_events=True, intents = discord.Intents.all())
-
+lavalink_data = {
+    "host": "localhost",
+    "port": 2333,
+    "password": "youshallnotpass",
+    "user_id": 1234
+}
 
 @bot.event
 async def close():
@@ -23,7 +27,7 @@ async def on_ready():
 async def connect_nodes():
 	global lavalink
 	await bot.wait_until_ready()
-	lavalink = lavaplayer.LavalinkClient(host='127.0.0.1', port=2331, password='youshallnotpass', user_id = 941749936180064256)
+	lavalink = lavaplayer.LavalinkClient(**lavalink_data)
 	lavalink.connect()
 
 @bot.command()
@@ -129,7 +133,6 @@ async def _filter(ctx: commands.Context):
 @bot.event
 async def on_socket_raw_receive(msg):
 	data = json.loads(msg)
-	print(data)
 	
 	if not data or not data["t"]:
 		return
