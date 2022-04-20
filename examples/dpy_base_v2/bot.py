@@ -6,7 +6,7 @@ import lavaplayer
 PREFIX = ","
 TOKEN = "..."
 
-bot = commands.Bot(PREFIX, enable_debug_events=True, intents = discord.Intents.all())
+bot = commands.Bot(PREFIX, enable_debug_events=True, intents=discord.Intents.all())
 lavalink_data = {
     "host": "localhost",
     "port": 2333,
@@ -32,7 +32,7 @@ async def connect_nodes():
 
 @bot.command()
 async def join(ctx: commands.Context):
-	await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute = False)
+	await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
 	await lavalink.wait_for_connection(ctx.guild.id)
 	await ctx.send("Joined the voice channel.")
 
