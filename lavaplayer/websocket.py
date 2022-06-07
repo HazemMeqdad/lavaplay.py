@@ -140,7 +140,7 @@ class WS:
             
     async def event_dispatch(self, payload: dict):
         if payload.get("track"):
-            track = await self.client._decodetrack(payload["track"])
+            track = await self.client.decodetrack(payload["track"])
         event = payload["type"]
 
         guild_id = int(payload["guildId"])

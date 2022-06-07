@@ -69,7 +69,7 @@ class Lavalink:
         self._voice_handlers: Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
 
-    async def search_youtube(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
+    async def search_youtube(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
         Search for tracks with youtube.
 
@@ -87,10 +87,10 @@ class Lavalink:
         if result["loadType"] == "NO_MATCHES":
             return []
         if result["loadType"] == "LOAD_FAILED":
-            return None
+            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
         return prossing_tracks(result["tracks"])
 
-    async def get_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
+    async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
         Load tracks for unknow sits or youtube or soundcloud or radio.
 
@@ -113,11 +113,27 @@ class Lavalink:
             return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
         return prossing_tracks(result["tracks"])
 
-    async def _decodetrack(self, track: str) -> Track:
+    async def decodetrack(self, track: str) -> Track:
+        """
+        This method is used to decode a track from base64 only server can resolve, to info can anyone understanding it
+        
+        Parameters
+        ---------
+        track: :class:`str`
+            track result from base64
+        """
         result = await self.rest.decode_track(track)
         return Track(track, **result)
 
-    async def _decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
+    async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
+        """
+        This method is used to decode a tracks from base64 only server can resolve, to info can anyone understanding it
+
+        Parameters
+        ---------
+        tracks: :class:`list`
+            tracks result from base64
+        """
         result = await self.rest.decode_tracks(tracks)
         return prossing_tracks(result)
 
