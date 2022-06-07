@@ -8,7 +8,7 @@ Lavalink connecter
 __title__ = "lavaplayer"
 __author__ = "HazemMeqdad"
 __license__ = "MIT"
-__version__ = "1.0.7a"
+__version__ = "1.0.9a"
 
 from .client import LavalinkClient
 from .objects import *
