@@ -297,7 +297,7 @@ class Lavalink:
         node.repeat = False
         await self.set_guild_node(guild_id, node)
 
-    async def filters(self, guild_id: int, /, filters: Filters) -> None:
+    async def filters(self, guild_id: int, /, filters: t.Optional[Filters]) -> None:
         """
         Repeat the track for every.
 
@@ -316,6 +316,8 @@ class Lavalink:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
+        if not filters:
+            filters = Filters()
         filters._payload["guildId"] = str(guild_id)
         await self._ws.send(filters._payload)
 
