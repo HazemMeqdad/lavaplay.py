@@ -1,14 +1,12 @@
 import asyncio
 import typing as t
+import random
 from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
-from typing import Dict
-
 from .emitter import Emitter
 from .websocket import WS
 from .api import LavalinkRest
-from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent, PlayList
-from lavaplayer import __version__
-import random
+from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, PlayList
+from . import __version__
 from .utlits import get_event_loop, prossing_tracks
 
 
@@ -65,8 +63,9 @@ class Lavalink:
 
         # Unique identifier for the client.
         self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
-        self._nodes: Dict[int, Node] = {}
-        self._voice_handlers: Dict[int, ConnectionInfo] = {}
+        self.info: Info = None
+        self._nodes: t.Dict[int, Node] = {}
+        self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
 
     async def search_youtube(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
