@@ -90,9 +90,7 @@ class WS:
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     self._loop.create_task(self.callback(msg.json()))
-                elif msg.type in (aiohttp.WSMsgType.CLOSE,
-                         aiohttp.WSMsgType.CLOSING,
-                         aiohttp.WSMsgType.CLOSED):
+                elif msg.type in (aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSED):
                     _LOGGER.error("Websocket closed")
                     break
                 elif msg.type == aiohttp.WSMsgType.ERROR:
