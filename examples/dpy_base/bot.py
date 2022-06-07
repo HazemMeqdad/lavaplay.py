@@ -15,6 +15,11 @@ lavalink = lavaplayer.LavalinkClient(
 
 
 @bot.event
+async def close():
+    for guild in bot.guilds:
+        await guild.change_voice_state(channel=None)
+
+@bot.event
 async def on_ready():
     print("Bot is ready.")
 
@@ -119,8 +124,7 @@ async def _filter(ctx: commands.Context):
     await ctx.send("Filter applied.")
     
 @bot.event
-async def on_socket_raw_receive(data):
-    data = json.loads(data)
+async def on_socket_response(data):
 
     if not data or not data["t"]:
         return

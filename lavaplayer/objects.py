@@ -72,9 +72,9 @@ class TrackExceptionEvent(Event):
     track: Track
     guild_id: int
     exception: str
-    message: str
-    severity: str
-    cause: str
+    message: t.Optional[str]
+    severity: t.Optional[str]
+    cause: t.Optional[str]
 
 
 @dataclass
