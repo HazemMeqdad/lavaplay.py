@@ -3,18 +3,18 @@ from . import routes
 
 class LavalinkRest:
     """
-    The class make a request to the rest api for lavalink
+    The class make a request to the rest api for lavalink.
 
     Parameters
     ---------
     host: :class:`str`
-        ip address for lavalink server, default ip address for lavalink is ``127.0.0.1``
+        ip address for lavalink server, default ip address for lavalink is ``127.0.0.1`.
     port: :class:`int`
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
     is_ssl: :class:`bool`
-        Is server using ssl
+        Is server using ssl.
     """
     def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, is_ssl: bool = False) -> None:
         self.rest_uri = f"{'https' if is_ssl else 'http'}://{host}:{port}"
@@ -42,63 +42,50 @@ class LavalinkRest:
 
     async def load_tracks(self, query: str) -> list:
         """
-        This function makes a request to the rest api for lavalink
+        The REST api is used to resolve audio tracks for use with the play function :meth:`lavaplayer.Lavalink.play`.
 
         Parameters
         ---------
         query: :class:`str`
-            query for request like `ytsearch:`
+            query for request like `ytsearch:{query}`
         """
         return await self.request("GET", routes.LOADTRACKS.format(query=query))
 
     async def decode_track(self, track: str) -> dict:
         """
-        This function makes a request to the rest api for lavalink
+        Decode a single track into its real info
 
         Parameters
         ---------
         track: :class:`str`
-            track for request like `ytsearch:`
+            track base64 encoded text for request like `ytsearch:`
         """
         return await self.request("GET", routes.DECODETRACK.format(track=track))
 
     async def decode_tracks(self, tracks: list) -> list:
         """
-        This function makes a request to the rest api for lavalink
+        Decode a multiple track into their real info.
 
         Parameters
         ---------
         tracks: :class:`list`
-            tracks for request like `ytsearch:`
+            list of tracks base64 encoded text for request like `ytsearch:`
         """
         return await self.request("POST", routes.DECODETRACKS, data={"tracks": tracks})
 
     async def route_planner_status(self) -> dict:
         """
-        This function makes a request to the rest api for lavalink
-
-        Parameters
-        ---------
+        This function makes a request to the rest api for lavalink.
         """
         return await self.request("GET", routes.ROUTEPLANNER)
     
     async def route_planner_free_address(self, address: str) -> dict:
         """
-        This function makes a request to the rest api for lavalink
-
-        Parameters
-        ---------
-        address: :class:`str`
-            address for request like `ytsearch:`
         """
         return await self.request("GET", routes.UNMARK_FAILED_ADDRESS.format(address=address))
     
     async def route_planner_free_all(self) -> dict:
         """
-        This function makes a request to the rest api for lavalink
-
-        Parameters
-        ---------
         """
         return await self.request("GET", routes.UNMARK_ALL_FAILED_ADDRESS)
     
