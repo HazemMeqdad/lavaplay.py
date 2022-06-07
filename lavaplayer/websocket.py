@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 import logging
 from lavaplayer.exceptions import NodeError
+from lavaplayer.utlits import generate_resume_key
 from .objects import (
     Info,
     PlayerUpdateEvent,
@@ -13,6 +14,7 @@ from .objects import (
 )
 from .emitter import Emitter
 import typing as t
+from . import __version__
 
 if t.TYPE_CHECKING:
     from .client import LavalinkClient
@@ -28,16 +30,29 @@ class WS:
         host: str,
         port: int,
         is_ssl: bool = False,
+        password: str = None,
+        user_id: int = None,
+        num_shards: int = None,
+        resume_key: t.Optional[str] = None,
+        loop: t.Optional[asyncio.AbstractEventLoop] = None
     ) -> None:
         self.ws = None
         self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}"
         self.client = client
-        self._headers = client._headers
-        self._loop = client._loop
+        self._headers = {
+            "Authorization": password,
+            "User-Id": str(user_id),
+            "Client-Name": f"Lavaplayer-py/{__version__}",
+            "Num-Shards": str(num_shards)
+        }
+        self._loop = loop or client.loop
         self.emitter: Emitter = client.event_manager
         self.is_connect: bool = False
+        self.resume_key = resume_key
     
     async def _connect(self):
+        if self.resume_key:
+            self._headers["Resume-Key"] = self.resume_key
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
             self.session = session
             try:
@@ -63,13 +78,22 @@ class WS:
                     await asyncio.sleep(10)
                     await self._connect()
                     return
-
             _LOGGER.info("Connected to websocket")
             self.is_connect = True
+
+            self.resume_key = generate_resume_key()
+            await self.send({
+                "op": "configureResuming",
+                "key": self.resume_key,
+                "timeout": 60
+            })
+
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
-                    await self.callback(msg.json())
-                elif msg.type == aiohttp.WSMsgType.CLOSED:
+                    self._loop.create_task(self.callback(msg.json()))
+                elif msg.type in (aiohttp.WSMsgType.CLOSE,
+                         aiohttp.WSMsgType.CLOSING,
+                         aiohttp.WSMsgType.CLOSED):
                     _LOGGER.error("Websocket closed")
                     break
                 elif msg.type == aiohttp.WSMsgType.ERROR:
@@ -151,9 +175,9 @@ class WS:
         return self.is_connect and self.ws.closed is False
 
     async def send(self, payload):  # only dict
+        print(payload)
         if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
-            await self.check_connection()
             return
         try:
             await self.ws.send_json(payload)

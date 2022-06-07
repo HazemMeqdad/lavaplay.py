@@ -39,29 +39,42 @@ class LavalinkClient:
         user_id: int,
         num_shards: int = 1,
         is_ssl: bool = False,
+        loop: t.Optional[asyncio.AbstractEventLoop] = None
     ) -> None:
-        try:
-            self._loop = asyncio.get_event_loop()
-        except RuntimeError:
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
-        self._headers = {
-            "Authorization": password,
-            "User-Id": str(user_id),
-            "Client-Name": f"Lavaplayer/{__version__}",
-            "Num-Shards": str(num_shards)
-        }
-        self.event_manager = Emitter(self._loop)
-        self._ws = WS(self, host, port, is_ssl)
         self.info: Info = None
         self.host = host
         self.port = port
-        self.is_ssl = is_ssl
         self.password = password
         self.user_id = user_id
+        self.num_shards = num_shards
+        self.is_ssl = is_ssl
+        
+        self.loop = loop or self.get_event_loop()
+        self.event_manager = Emitter(self.loop)
+
+        self._ws = WS(
+            client=self, 
+            host=self.host, 
+            port=self.port, 
+            is_ssl=self.is_ssl, 
+            password=self.password, 
+            user_id=self.user_id, 
+            num_shards=self.num_shards
+        )
+
+        # Unique identifier for the client.
         self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: Dict[int, Node] = {}
         self._voice_handlers: Dict[int, ConnectionInfo] = {}
+        self._task_loop: asyncio.Task = None
+
+    def get_event_loop(self) -> asyncio.AbstractEventLoop:
+        try:
+            self.loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+        return self.loop
 
     def _prossing_tracks(self, tracks: list) -> t.List[Track]:
         _tracks = []
@@ -209,7 +222,7 @@ class LavalinkClient:
             raise NodeError("Node not found", guild_id)
 
         for track in tracks:
-            self._loop.create_task(self.play(guild_id, track, requester))
+            self.loop.create_task(self.play(guild_id, track, requester))
 
     async def get_guild_node(self, guild_id: int, /) -> t.Optional[Node]:
         """
@@ -625,7 +638,13 @@ class LavalinkClient:
         """
         Connect to the lavalink websocket
         """
-        self._loop.create_task(self._ws._connect())
+        self.loop.create_task(self._ws._connect())
+
+    async def close(self):
+        """
+        Disconnect from the lavalink websocket
+        """
+        await self._ws.ws.close()
 
     @property
     def nodes(self):
