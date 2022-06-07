@@ -9,7 +9,7 @@ from .api import LavalinkRest
 from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent, PlayList
 from lavaplayer import __version__
 import random
-from .utlits import get_event_loop
+from .utlits import get_event_loop, prossing_tracks
 
 
 class Lavalink:
@@ -88,7 +88,7 @@ class Lavalink:
             return []
         if result["loadType"] == "LOAD_FAILED":
             return None
-        return self._prossing_tracks(result["tracks"])
+        return prossing_tracks(result["tracks"])
 
     async def get_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
@@ -110,8 +110,8 @@ class Lavalink:
         if result["loadType"] == "LOAD_FAILED":
             raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
         if result["loadType"] == "PLAYLIST_LOADED":
-            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], self._prossing_tracks(result["tracks"]))
-        return self._prossing_tracks(result["tracks"])
+            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
+        return prossing_tracks(result["tracks"])
 
     async def _decodetrack(self, track: str) -> Track:
         result = await self.rest.decode_track(track)
@@ -119,7 +119,7 @@ class Lavalink:
 
     async def _decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
         result = await self.rest.decode_tracks(tracks)
-        return self._prossing_tracks(result)
+        return prossing_tracks(result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
