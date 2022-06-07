@@ -121,7 +121,6 @@ class WebSocketClosedEvent(Event):
     """
     Event on websocket closed.
     """
-    track: Track
     guild_id: int
     code: int
     reason: str

@@ -1,7 +1,6 @@
 import asyncio
 import aiohttp
 import logging
-from lavaplayer.exceptions import NodeError
 from lavaplayer.utlits import generate_resume_key
 from .objects import (
     Info,
@@ -17,7 +16,7 @@ import typing as t
 from . import __version__
 
 if t.TYPE_CHECKING:
-    from .client import LavalinkClient
+    from .client import Lavalink
 
 
 _LOGGER = logging.getLogger("lavaplayer.ws")
@@ -26,7 +25,7 @@ _LOGGER = logging.getLogger("lavaplayer.ws")
 class WS:
     def __init__(
         self,
-        client: "LavalinkClient",
+        client: "Lavalink",
         host: str,
         port: int,
         is_ssl: bool = False,
@@ -134,51 +133,52 @@ class WS:
                 position=position / 1000 if isinstance(position, int) else None,
                 connected=payload["state"].get("connected", None),
             )
-            self.emitter.emit("playerUpdateEvent", data)
+            self.emitter.emit("PlayerUpdateEvent", data)
 
-        elif payload["op"] == "event":
-
-            if not payload.get("track"):
-                return
+        elif payload["op"] == "event" and payload.get("track") is not None:
+            await self.event_dispatch(payload)
+            
+    async def event_dispatch(self, payload: dict):
+        if payload.get("track"):
             track = await self.client._decodetrack(payload["track"])
-            guild_id = int(payload["guildId"])
-            try:
-                node = await self.client.get_guild_node(guild_id)
-            except NodeError:
-                node = None
+        event = payload["event"]
 
-            if payload["type"] == "TrackStartEvent":
-                self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
+        guild_id = int(payload["guildId"])
 
-            elif payload["type"] == "TrackEndEvent":
-                self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
-                if not node:
-                    return
-                if not node.queue:
-                    return
-                if node.repeat:
-                    await self.client.play(guild_id, track, node.queue[0].requester, True)
-                    return
-                del node.queue[0]
-                await self.client.set_guild_node(guild_id, node)
-                if len(node.queue) != 0:
-                    await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
+        node = await self.client.get_guild_node(guild_id)
 
-            elif payload["type"] == "TrackExceptionEvent":
-                self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload["exception"], payload.get("message"), payload.get("severity"), payload.get("cause")))
+        if event == "TrackStartEvent":
+            self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
 
-            elif payload["type"] == "TrackStuckEvent":
-                self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, payload["thresholdMs"]))
+        elif event == "TrackEndEvent":
+            self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
+            if not node or not node.queue:
+                return
+            if node.repeat:
+                await self.client.play(guild_id, track, node.queue[0].requester, True)
+                return
+            del node.queue[0]
+            await self.client.set_guild_node(guild_id, node)
+            if len(node.queue) != 0:
+                await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
-            elif payload["type"] == "WebSocketClosedEvent":
-                self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(track, guild_id, payload["code"], payload["reason"], payload["byRemote"]))
+        elif event == "TrackExceptionEvent":
+            self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload.get("exception"), payload.get("message"), payload.get("severity"), payload.get("cause")))
+
+        elif event == "TrackStuckEvent":
+            self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, payload.get("thresholdMs")))
+
+        elif event == "WebSocketClosedEvent":
+            self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(guild_id, payload.get("code"), payload.get("reason"), payload.get("byRemote")))
+        
+        else:
+            _LOGGER.warning(f"Unknown event: {event}")
 
     @property
     def is_connected(self) -> bool:
         return self.is_connect and self.ws.closed is False
 
     async def send(self, payload):  # only dict
-        print(payload)
         if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
             return
