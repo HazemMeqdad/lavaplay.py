@@ -1,7 +1,7 @@
 import aiohttp
+from . import routes
 
-
-class Api:
+class LavalinkRest:
     """
     The class make a request to the rest api for lavalink
 
@@ -39,3 +39,71 @@ class Api:
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.request(method, self.rest_uri + rout, data=data) as resp:
                 return await resp.json()
+
+    async def load_tracks(self, query: str) -> list:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        query: :class:`str`
+            query for request like `ytsearch:`
+        """
+        return await self.request("GET", routes.LOADTRACKS.format(query=query))
+
+    async def decode_track(self, track: str) -> dict:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        track: :class:`str`
+            track for request like `ytsearch:`
+        """
+        return await self.request("GET", routes.DECODETRACK.format(track=track))
+
+    async def decode_tracks(self, tracks: list) -> list:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        tracks: :class:`list`
+            tracks for request like `ytsearch:`
+        """
+        return await self.request("POST", routes.DECODETRACKS, data={"tracks": tracks})
+
+    async def route_planner_status(self) -> dict:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        """
+        return await self.request("GET", routes.ROUTEPLANNER)
+    
+    async def route_planner_free_address(self, address: str) -> dict:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        address: :class:`str`
+            address for request like `ytsearch:`
+        """
+        return await self.request("GET", routes.UNMARK_FAILED_ADDRESS.format(address=address))
+    
+    async def route_planner_free_all(self) -> dict:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Parameters
+        ---------
+        """
+        return await self.request("GET", routes.UNMARK_ALL_FAILED_ADDRESS)
+    
+
+class Api(LavalinkRest):
+    """
+    Inherit from :class:`LavalinkRest`, ill remove it later.
+    """

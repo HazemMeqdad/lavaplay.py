@@ -5,13 +5,14 @@ from typing import Dict
 
 from .emitter import Emitter
 from .websocket import WS
-from .api import Api
+from .api import LavalinkRest
 from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, ErrorEvent, PlayList
 from lavaplayer import __version__
 import random
+from .utlits import get_event_loop
 
 
-class LavalinkClient:
+class Lavalink:
     """
     Represents a Lavalink client used to manage nodes and connections.
 
@@ -49,7 +50,7 @@ class LavalinkClient:
         self.num_shards = num_shards
         self.is_ssl = is_ssl
         
-        self.loop = loop or self.get_event_loop()
+        self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
 
         self._ws = WS(
@@ -63,38 +64,10 @@ class LavalinkClient:
         )
 
         # Unique identifier for the client.
-        self._api = Api(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
+        self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self._nodes: Dict[int, Node] = {}
         self._voice_handlers: Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
-
-    def get_event_loop(self) -> asyncio.AbstractEventLoop:
-        try:
-            self.loop = asyncio.get_running_loop()
-        except RuntimeError:
-            self.loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self.loop)
-        return self.loop
-
-    def _prossing_tracks(self, tracks: list) -> t.List[Track]:
-        _tracks = []
-        for track in tracks:
-            info = track["info"]
-            _tracks.append(
-                Track(
-                    track=track["track"],
-                    identifier=info["identifier"],
-                    isSeekable=info["isSeekable"],
-                    author=info["author"],
-                    length=info["length"],
-                    isStream=info["isStream"],
-                    position=info["position"],
-                    sourceName=info.get("sourceName", None),
-                    title=info.get("title", None),
-                    uri=info["uri"]
-                )
-            )
-        return _tracks
 
     async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Optional[int]) -> None:
         """
@@ -147,7 +120,7 @@ class LavalinkClient:
         :class:`lavaplayer.exceptions.TrackLoadFailed`
             If the track could not be loaded.
         """
-        result = await self._api.request("GET", "/loadtracks", data={"identifier": f"ytsearch:{query}"})
+        result = await self.rest.load_tracks(f"ytsearch:{query}")
         if result["loadType"] == "NO_MATCHES":
             return []
         if result["loadType"] == "LOAD_FAILED":
@@ -168,7 +141,7 @@ class LavalinkClient:
         :class:`lavaplayer.exceptions.TrackLoadFailed`
             If the track could not be loaded.
         """
-        result = await self._api.request("GET", "/loadtracks", data={"identifier": query})
+        result = await self.rest.load_tracks(query)
         if result["loadType"] == "NO_MATCHES":
             return []
         if result["loadType"] == "LOAD_FAILED":
@@ -178,11 +151,11 @@ class LavalinkClient:
         return self._prossing_tracks(result["tracks"])
 
     async def _decodetrack(self, track: str) -> Track:
-        result = await self._api.request("GET", "/decodetrack", data={"track": track})
+        result = await self.rest.decode_track(track)
         return Track(track, **result)
 
     async def _decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
-        result = await self._api.request("POST", "/decodetrack", json=tracks)
+        result = await self.rest.decode_tracks(tracks)
         return self._prossing_tracks(result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
@@ -649,3 +622,8 @@ class LavalinkClient:
     @property
     def nodes(self):
         return self._nodes
+
+class LavalinkClient(Lavalink):
+    """
+    Inherit from :class:`Lavalink`, ill remove it later..
+    """
