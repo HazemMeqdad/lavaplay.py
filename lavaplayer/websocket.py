@@ -141,7 +141,7 @@ class WS:
     async def event_dispatch(self, payload: dict):
         if payload.get("track"):
             track = await self.client._decodetrack(payload["track"])
-        event = payload["event"]
+        event = payload["type"]
 
         guild_id = int(payload["guildId"])
 
@@ -153,6 +153,13 @@ class WS:
         elif event == "TrackEndEvent":
             self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
             if not node or not node.queue:
+                return
+            if node.queue_repeat:
+                node.queue.append(node.queue.pop(0))
+                await self.client.set_guild_node(guild_id, node)
+                if len(node.queue) == 0:
+                    return
+                await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
                 return
             if node.repeat:
                 await self.client.play(guild_id, track, node.queue[0].requester, True)

@@ -50,6 +50,7 @@ class Node:
     volume: int
     is_pause: bool = False
     repeat: bool = False
+    queue_repeat: bool = False
     is_connected: bool = False
 
 

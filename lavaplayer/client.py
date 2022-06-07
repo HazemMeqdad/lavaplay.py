@@ -266,6 +266,22 @@ class Lavalink:
         node.repeat = stats
         await self.set_guild_node(guild_id, node)
 
+    async def queue_repeat(self, guild_id: int, /, stats: bool) -> None:
+        """
+        Repeat the queue for every.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        stats: :class:`bool`
+            the stats for repeat queue
+        """
+        node = await self.get_guild_node(guild_id)
+        node.queue_repeat = stats
+        node.repeat = False
+        await self.set_guild_node(guild_id, node)
+
     async def filters(self, guild_id: int, /, filters: Filters) -> None:
         """
         Repeat the track for every.
