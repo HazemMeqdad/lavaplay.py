@@ -69,43 +69,6 @@ class Lavalink:
         self._voice_handlers: Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
 
-    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Optional[int]) -> None:
-        """
-        Update the voice connection for a guild.
-
-        Parameters
-        ---------
-        guild_id: :class:`int`
-            guild id for server
-        session_id: :class:`str`
-            session id for connection
-        token: :class:`str`
-            token for connection
-        endpoint: :class:`str`
-            endpoint for connection
-        channel_id: :class:`int`
-            channel id for connection, if not give channel_id the connection will be closed
-        """
-        if not channel_id:
-            await self.destroy(guild_id)
-            return
-        await self._ws.send({
-            "op": "voiceUpdate",
-            "guildId": str(guild_id),
-            "sessionId": session_id,
-            "event": {
-                "token": token,
-                "guild_id": str(guild_id),
-                "endpoint": endpoint.replace("wss://", "")
-            }
-        })
-        await self.create_new_node(guild_id, is_connected=True)
-
-    async def create_new_node(self, guild_id: int, /, is_connected: bool = False) -> Node:
-        node = Node(guild_id, [], 100, is_connected=is_connected)
-        self._nodes[guild_id] = node
-        return node
-
     async def search_youtube(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
         Search for tracks with youtube.
@@ -176,26 +139,10 @@ class Lavalink:
             return await self.get_tracks(query)
         return await self.search_youtube(query)
 
-    async def add_to_queue(self, guild_id: int, /, tracks: t.List[Track], requester: t.Optional[int] = None) -> None:
-        """
-        Add tracks to queue. use to load a playlist result.
-
-        >>> playlist = await lavaplayer.search_youtube("playlist url")
-        >>> await lavaplayer.add_to_queue(guild_id, playlist.tracks)
-
-        Parameters
-        ---------
-        guild_id: :class:`int`
-            guild id for server
-        tracks: :class:`list`
-            tracks to add to queue
-        """
-        node = await self.get_guild_node(guild_id)
-        if not node:
-            raise NodeError("Node not found", guild_id)
-
-        for track in tracks:
-            self.loop.create_task(self.play(guild_id, track, requester))
+    async def create_new_node(self, guild_id: int, /, is_connected: bool = False) -> Node:
+        node = Node(guild_id, [], 100, is_connected=is_connected)
+        self._nodes[guild_id] = node
+        return node
 
     async def get_guild_node(self, guild_id: int, /) -> t.Optional[Node]:
         """
@@ -233,32 +180,26 @@ class Lavalink:
         await self.get_guild_node(guild_id)
         self._nodes[guild_id] = node
 
-    async def queue(self, guild_id: int, /) -> t.List[Track]:
+    async def add_to_queue(self, guild_id: int, /, tracks: t.List[Track], requester: t.Optional[int] = None) -> None:
         """
-        Get guild queue list from node cache memory.
+        Add tracks to queue. use to load a playlist result.
+
+        >>> playlist = await lavaplayer.search_youtube("playlist url")
+        >>> await lavaplayer.add_to_queue(guild_id, playlist.tracks)
 
         Parameters
         ---------
         guild_id: :class:`int`
             guild id for server
+        tracks: :class:`list`
+            tracks to add to queue
         """
         node = await self.get_guild_node(guild_id)
-        return node.queue
+        if not node:
+            raise NodeError("Node not found", guild_id)
 
-    async def repeat(self, guild_id: int, /, stats: bool) -> None:
-        """
-        Repeat the track for every.
-
-        Parameters
-        ---------
-        guild_id: :class:`int`
-            guild id for server
-        stats: :class:`bool`
-            the stats for repeat track
-        """
-        node = await self.get_guild_node(guild_id)
-        node.repeat = stats
-        await self.set_guild_node(guild_id, node)
+        for track in tracks:
+            self.loop.create_task(self.play(guild_id, track, requester))
 
     async def play(self, guild_id: int, /, track: Track, requester: t.Optional[int] = None, start: bool = False) -> None:
         """
@@ -297,6 +238,33 @@ class Lavalink:
         if len(node.queue) != 1:
             return
         await self._ws.send(payload)
+
+    async def queue(self, guild_id: int, /) -> t.List[Track]:
+        """
+        Get guild queue list from node cache memory.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        """
+        node = await self.get_guild_node(guild_id)
+        return node.queue
+
+    async def repeat(self, guild_id: int, /, stats: bool) -> None:
+        """
+        Repeat the track for every.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        stats: :class:`bool`
+            the stats for repeat track
+        """
+        node = await self.get_guild_node(guild_id)
+        node.repeat = stats
+        await self.set_guild_node(guild_id, node)
 
     async def filters(self, guild_id: int, /, filters: Filters) -> None:
         """
@@ -504,6 +472,38 @@ class Lavalink:
         await self.set_guild_node(guild_id, node)
         return node
 
+    async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Optional[int]) -> None:
+        """
+        Update the voice connection for a guild.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        session_id: :class:`str`
+            session id for connection
+        token: :class:`str`
+            token for connection
+        endpoint: :class:`str`
+            endpoint for connection
+        channel_id: :class:`int`
+            channel id for connection, if not give channel_id the connection will be closed
+        """
+        if not channel_id:
+            await self.destroy(guild_id)
+            return
+        await self._ws.send({
+            "op": "voiceUpdate",
+            "guildId": str(guild_id),
+            "sessionId": session_id,
+            "event": {
+                "token": token,
+                "guild_id": str(guild_id),
+                "endpoint": endpoint.replace("wss://", "")
+            }
+        })
+        await self.create_new_node(guild_id, is_connected=True)
+
     async def raw_voice_state_update(self, guild_id: int, /, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """
         A voice state update has been received from Discord.
@@ -576,16 +576,6 @@ class Lavalink:
             raise NodeError("Node not found", guild_id)
         while (await self.get_guild_node(guild_id)):
             await asyncio.sleep(0.1)
-
-    def _raise_or_emit(self, exception: Exception, *args, **kwargs) -> None:
-        """
-        This function is used to raise or emit an exception. its not a complete becuse i need to save listener with asyncio.futures but not now.
-        """
-        listeners = self.event_manger.listeners
-        error_handler = [i for i in listeners if i["event"] == "ErrorEvent"]
-        if not error_handler:
-            raise exception(*args, **kwargs)
-        self.event_manger.emit(ErrorEvent, ErrorEvent(args[0], exception))
 
     def listen(self, event: t.Union[str, Event]) -> t.Callable[..., t.Awaitable]:
         """
