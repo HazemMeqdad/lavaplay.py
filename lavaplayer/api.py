@@ -1,5 +1,10 @@
 import aiohttp
 from . import routes
+import logging
+
+
+_LOGGER = logging.getLogger(__name__)
+
 
 class LavalinkRest:
     """
@@ -38,6 +43,7 @@ class LavalinkRest:
         """
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.request(method, self.rest_uri + rout, data=data) as resp:
+                _LOGGER.debug(f"{method} {self.rest_uri + rout}")
                 return await resp.json()
 
     async def load_tracks(self, query: str) -> list:
