@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from lavaplayer.exceptions import FiltersError
 import typing as t
 
@@ -16,26 +16,42 @@ class Info:
     uptime: int
 
 
-@dataclass(repr=True)
+@dataclass(repr=True, init=False)
 class Track:
     """
     Info track object.
     """
-    track: str
-    identifier: str
-    isSeekable: bool
-    author: str
-    length: int
-    isStream: bool
-    position: int
-    title: str
-    uri: str
-    requester: t.Union[str, None] = None
-    sourceName: t.Optional[str] = None
-    timestamp: t.Optional[t.Any] = None
-    """
-    optional option to save a requester for the track
-    """
+    def __init__(
+        self,    
+        track: str,
+        identifier: str,
+        isSeekable: bool,
+        author: str,
+        length: int,
+        isStream: bool,
+        position: int,
+        title: str,
+        uri: str,
+        requester: t.Union[str, None] = None,
+        sourceName: t.Optional[str] = None,
+        timestamp: t.Optional[t.Any] = None,
+        *args, 
+        **kwargs
+    ) -> None:
+        self.track = track
+        self.identifier = identifier
+        self.isSeekable = isSeekable
+        self.author = author
+        self.length = length
+        self.isStream = isStream
+        self.position = position
+        self.title = title
+        self.uri = uri
+        self.requester = requester
+        self.sourceName = sourceName
+        self.timestamp = timestamp
+        self.args = args
+        self.kwargs = kwargs
 
     def __repr__(self) -> str:
         return self.title
