@@ -32,6 +32,7 @@ class Track:
     uri: str
     requester: t.Union[str, None] = None
     sourceName: t.Optional[str] = None
+    timestamp: t.Optional[t.Any] = None
     """
     optional option to save a requester for the track
     """
