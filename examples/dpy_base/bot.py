@@ -6,7 +6,7 @@ PREFIX = ","
 TOKEN = "..."
 
 bot = commands.Bot(PREFIX, enable_debug_events=True)
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplayer.Lavalink(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
