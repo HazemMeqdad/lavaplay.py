@@ -40,7 +40,6 @@ class Lavalink:
         is_ssl: bool = False,
         loop: t.Optional[asyncio.AbstractEventLoop] = None
     ) -> None:
-        self.info: Info = None
         self.host = host
         self.port = port
         self.password = password
@@ -50,16 +49,6 @@ class Lavalink:
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
-
-        self._ws = WS(
-            client=self, 
-            host=self.host, 
-            port=self.port, 
-            is_ssl=self.is_ssl, 
-            password=self.password, 
-            user_id=self.user_id, 
-            num_shards=self.num_shards
-        )
 
         # Unique identifier for the client.
         self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
@@ -479,7 +468,7 @@ class Lavalink:
             "guildId": str(guild_id)
         })
 
-    async def shuffle(self, guild_id: int, /) -> t.Optional[Node]:
+    async def shuffle(self, guild_id: int, /) -> t.Union[Node, t.List]:
         """
         Add shuffle to the track.
 
@@ -634,6 +623,15 @@ class Lavalink:
         """
         Connect to the lavalink websocket
         """
+        self._ws = WS(
+            client=self, 
+            host=self.host, 
+            port=self.port, 
+            is_ssl=self.is_ssl, 
+            password=self.password, 
+            user_id=self.user_id, 
+            num_shards=self.num_shards
+        )
         self.loop.create_task(self._ws._connect())
 
     async def close(self):
