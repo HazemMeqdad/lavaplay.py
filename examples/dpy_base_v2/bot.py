@@ -2,17 +2,20 @@ import discord
 from discord.ext import commands
 import json
 import lavaplayer
+import logging
 
-PREFIX = ","
-TOKEN = "..."
+PREFIX = ","  # Change this to your prefix
+TOKEN = "..."  # Change this to your token
 
-bot = commands.Bot(PREFIX, enable_debug_events=True, intents=discord.Intents.all())
-lavalink_data = {
-    "host": "localhost",
-    "port": 2333,
-    "password": "youshallnotpass",
-    "user_id": 1234
-}
+LOG = logging.getLogger("discord.bot")
+
+bot = commands.Bot(commands.when_mentioned_or(PREFIX), enable_debug_events=True, intents=discord.Intents.all())
+lavalink = lavaplayer.Lavalink(
+    host="localhost",  # Lavalink host
+    port=2333,  # Lavalink port
+    password="youshallnotpass"  # Lavlink password
+)
+bot.remove_command("help")
 
 @bot.event
 async def close():
@@ -21,71 +24,67 @@ async def close():
 
 @bot.event
 async def on_ready():
-	print("Bot is ready.")
-	await connect_nodes()
+    lavalink.set_user_id(bot.user.id)
+    lavalink.set_event_loop(bot.loop)
+    lavalink.connect()
+    LOG.info("Logged in as %s", bot.user.name)
 
-async def connect_nodes():
-	global lavalink
-	await bot.wait_until_ready()
-	lavalink = lavaplayer.LavalinkClient(**lavalink_data)
-	lavalink.connect()
+@bot.command(name="help", aliases=["commands"], help="Shows all commands.")
+async def help_commmand(ctx: commands.Context):
+    embed = discord.Embed(title="Help", description="This is a help command", color=0x00ff00)
+    embed.description = "\n".join(f"`{PREFIX}{command.name}`: {command.help}" for command in bot.commands)
+    await ctx.send(embed=embed)
 
-@bot.command()
+@bot.command(help="Join the voice channel")
 async def join(ctx: commands.Context):
 	await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
 	await lavalink.wait_for_connection(ctx.guild.id)
 	await ctx.send("Joined the voice channel.")
 
-
-@bot.command()
+@bot.command(help="Leave the voice channel")
 async def leave(ctx: commands.Context):
 	await ctx.guild.change_voice_state(channel=None)
 	await lavalink.wait_for_remove_connection(ctx.guild.id)
 	await ctx.send("Left the voice channel.")
 
-@bot.command()
+@bot.command(help="Play a song")
 async def play(ctx: commands.Context, *, query: str):
-	try:
-		tracks = await lavalink.auto_search_tracks(query)
-	except lavaplayer.TrackLoadFailed as exc:
-		return await ctx.send(exc.message)
+    tracks = await lavalink.auto_search_tracks(query)
 
-	if not tracks:
-		return await ctx.send("No results found.")
+    if not tracks:
+        return await ctx.send("No results found.")
+    elif isinstance(tracks, lavaplayer.TrackLoadFailed):
+        await ctx.send("Track load failed. Try again.\n```" + tracks.message + "```")
+    # Playlist
+    elif isinstance(tracks, lavaplayer.PlayList):
+        msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
+        await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
+        await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
+        return
+    await lavalink.play(ctx.guild.id, tracks[0], ctx.author.id)
+    await ctx.send(f"Now playing: {tracks[0].title}")
 
-	# Playlist
-	if isinstance(tracks, lavaplayer.PlayList):
-		msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
-		await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
-		await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
-		return
-
-	track = tracks[0]
-	await lavalink.play(ctx.guild.id, track, ctx.author.id)
-	await ctx.send(f"Now playing: {track.title}")
-
-
-@bot.command()
+@bot.command(help="Pause the current song")
 async def pause(ctx: commands.Context):
 	await lavalink.pause(ctx.guild.id, True)
 	await ctx.send("Paused the track.")
 
-@bot.command()
+@bot.command(help="Resume the current song")
 async def resume(ctx: commands.Context):
 	await lavalink.pause(ctx.guild.id, False)
 	await ctx.send("Resumed the track.")
 
-@bot.command()
+@bot.command(help="Stop the current song")
 async def stop(ctx: commands.Context):
 	await lavalink.stop(ctx.guild.id)
 	await ctx.send("Stopped the track.")
 
-@bot.command()
+@bot.command(help="Skip the current song")
 async def skip(ctx: commands.Context):
 	await lavalink.skip(ctx.guild.id)
 	await ctx.send("Skipped the track.")
 
-@bot.command()
+@bot.command(help="Get queue info")
 async def queue(ctx: commands.Context):
 	queue = lavalink.queue(ctx.guild.id)
 	if not queue:
@@ -93,42 +92,43 @@ async def queue(ctx: commands.Context):
 	tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]
 	await ctx.send("\n".join(tracks))
 
-@bot.command()
+@bot.command(help="Set the volume")
 async def volume(ctx: commands.Context, volume: int):
 	await lavalink.volume(ctx.guild.id, volume)
 	await ctx.send(f"Set the volume to {volume}%.")
 
-@bot.command()
+@bot.command(help="Seek to a position")
 async def seek(ctx: commands.Context, seconds: int):
 	await lavalink.seek(ctx.guild.id, seconds)
 	await ctx.send(f"Seeked to {seconds} seconds.")
 
-@bot.command()
+@bot.command(help="Get the current song")
 async def shuffle(ctx: commands.Context):
 	await lavalink.shuffle(ctx.guild.id)
 	await ctx.send("Shuffled the queue.")
 
-@bot.command()
+@bot.command(help="Get the current song")
 async def remove(ctx: commands.Context, index: int):
 	await lavalink.remove(ctx.guild.id, index)
 	await ctx.send(f"Removed track {index}.")
 
-@bot.command()
+@bot.command(help="Get the current song")
 async def clear(ctx: commands.Context):
 	await lavalink.clear(ctx.guild.id)
 	await ctx.send("Cleared the queue.")
 
-@bot.command()
-async def repeat(ctx: commands.Context):
-	await lavalink.repeat(ctx.guild.id, True)
+@bot.command(help="Get the current song")
+async def repeat(ctx: commands.Context, status: bool):
+	await lavalink.repeat(ctx.guild.id, status)
 	await ctx.send("Repeated the queue.")
 	
-@bot.command(aliases=['filter'])
-async def _filter(ctx: commands.Context):
-	filters = lavaplayer.Filters()
-	filters.rotation(0.2)
-	await lavalink.filters(ctx.guild.id, filters)
-	await ctx.send("Filter applied.")
+@bot.command(name="filter", help="Get the current song")
+async def filter_command(ctx: commands.Context):
+    filters = lavaplayer.Filters()
+    filters.rotation(0.2)
+    filters.equalizer([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+    await lavalink.filters(ctx.guild.id, filters)
+    await ctx.send("Filter applied.")
 	
 @bot.event
 async def on_socket_raw_receive(msg):
