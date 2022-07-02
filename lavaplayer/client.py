@@ -1,4 +1,5 @@
 import asyncio
+import time
 import typing as t
 import random
 from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
@@ -22,8 +23,8 @@ class Lavalink:
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
-    bot_id: :class:`int`
-        The bot id
+    user_id: :class:`int | None`
+        The bot id when you keep None you need to set on a started event on ur library used.
     num_shards: :class:`int`
         The count shards for websocket
     is_ssl: :class:`bool`
@@ -35,7 +36,7 @@ class Lavalink:
         host: t.Optional[str] = "127.0.0.1",
         port: int,
         password: str,
-        user_id: int,
+        user_id: t.Optional[int] = None,
         num_shards: int = 1,
         is_ssl: bool = False,
         loop: t.Optional[asyncio.AbstractEventLoop] = None
@@ -49,6 +50,7 @@ class Lavalink:
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
+        self._ws: t.Optional[WS] = None
 
         # Unique identifier for the client.
         self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
@@ -56,6 +58,80 @@ class Lavalink:
         self._nodes: t.Dict[int, Node] = {}
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
+
+    def set_user_id(self, user_id: int) -> None:
+        """
+        Set the bot id for the client requird set after call :meth:`connect` if not setup.
+
+        Parameters
+        ---------
+        user_id: :class:`int`
+            The bot id.
+        """
+        self.user_id = user_id
+    
+    def set_event_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """
+        Set the event loop for the client requird set after call :meth:`connect`,
+
+        Parameters
+        ---------
+        loop: :class:`asyncio.AbstractEventLoop`
+            The event loop to use.
+        """
+        asyncio.set_event_loop(loop)
+        self.loop = loop
+        self.event_manager._loop = loop
+
+    def set_host(self, host: str) -> None:
+        """
+        Set the host for the client.
+
+        Parameters
+        ---------
+        host: :class:`str`
+            The host to use.
+        """
+        self.host = host
+    
+    def set_port(self, port: int) -> None:
+        """
+        Set the port for the client.
+
+        Parameters
+        ---------
+        port: :class:`int`
+            The port to use.
+        """
+        self.port = port
+    
+    def set_password(self, password: str) -> None:
+        """
+        Set the password for the client.
+
+        Parameters
+        ---------
+        password: :class:`str`
+            The password to use.
+        """
+        self.password = password
+    
+    def set_num_shards(self, num_shards: int) -> None:
+        """
+        Set the count shards for websocket
+        """
+        self.num_shards = num_shards
+    
+    def set_is_ssl(self, is_ssl: bool) -> None:
+        """
+        Set the is_ssl for the client.
+
+        Parameters
+        ---------
+        is_ssl: :class:`bool`
+            The is_ssl to use.
+        """
+        self.is_ssl = is_ssl
 
     async def search_youtube(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
