@@ -187,7 +187,18 @@ class Lavalink:
             track result from base64
         """
         result = await self.rest.decode_track(track)
-        return Track(track, **result)
+        return Track(
+            track,
+            identifier=result["identifier"],
+            is_seekable=result["isSeekable"],
+            author=result["author"],
+            length=result["length"],
+            is_stream=result["isStream"],
+            position=result["position"],
+            source_name=result.get("sourceName", None),
+            title=result.get("title", None),
+            uri=result["uri"]
+        )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
         """

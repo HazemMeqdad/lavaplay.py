@@ -34,12 +34,12 @@ def prossing_tracks(tracks: list) -> t.List[Track]:
             Track(
                 track=track["track"],
                 identifier=info["identifier"],
-                isSeekable=info["isSeekable"],
+                is_seekable=info["isSeekable"],
                 author=info["author"],
                 length=info["length"],
-                isStream=info["isStream"],
+                is_stream=info["isStream"],
                 position=info["position"],
-                sourceName=info.get("sourceName", None),
+                source_name=info.get("sourceName", None),
                 title=info.get("title", None),
                 uri=info["uri"]
             )

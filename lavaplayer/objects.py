@@ -23,15 +23,15 @@ class Track:
     """
     track: str
     identifier: str
-    isSeekable: bool
+    is_seekable: bool
     author: str
     length: int
-    isStream: bool
+    is_stream: bool
     position: int
     title: str
     uri: str
     requester: t.Union[str, None] = None
-    sourceName: t.Optional[str] = None
+    source_name: t.Optional[str] = None
     timestamp: t.Optional[t.Any] = None
     """
     optional option to save a requester for the track
