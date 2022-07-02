@@ -494,6 +494,55 @@ class Lavalink:
         await self.set_guild_node(guild_id, node)
         return node
 
+    async def remove(self, guild_id: int, /, position: int) -> t.Union[Node, t.List]:
+        """
+        Remove a track from the queue.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        position: :class:`int`
+            the position of the track in the queue
+        
+        Raises
+        --------
+        :exc:`.NodeError`
+            If guild not found in nodes cache.
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+        if not node.queue:
+            return []
+        node.queue.pop(position)
+        await self.set_guild_node(guild_id, node)
+        return node
+    
+    async def index(self, guild_id: int, /, position: int) -> t.Union[Node, t.List]:
+        """
+        Get the track at a specific position in the queue.
+
+        Parameters
+        ---------
+        guild_id: :class:`int`
+            guild id for server
+        position: :class:`int`
+            the position of the track in the queue
+        
+        Raises
+        --------
+        :exc:`.NodeError`
+            If guild not found in nodes cache.
+        """
+        node = await self.get_guild_node(guild_id)
+        if not node:
+            raise NodeError("Node not found", guild_id)
+        if not node.queue:
+            return []
+        return node.queue[position]
+    
+
     async def voice_update(self, guild_id: int, /, session_id: str, token: str, endpoint: str, channel_id: t.Optional[int]) -> None:
         """
         Update the voice connection for a guild.
