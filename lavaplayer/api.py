@@ -95,6 +95,10 @@ class LavalinkRest:
         """
         return await self.request("GET", routes.UNMARK_ALL_FAILED_ADDRESS)
     
+    async def plugins(self) -> dict:
+        """
+        """
+        return await self.request("GET", routes.PLUGINS)
 
 class Api(LavalinkRest):
     """
