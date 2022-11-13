@@ -102,10 +102,15 @@ class WS:
         if payload["op"] == "stats":
             self.client.info = Info(
                 playing_players=payload["playingPlayers"],
+                memory_reservable=payload["memory"]["reservable"],
                 memory_used=payload["memory"]["used"],
                 memory_free=payload["memory"]["free"],
+                memory_allocated=payload["memory"]["allocated"],
                 players=payload["players"],
-                uptime=payload["uptime"]
+                cpu_cores=payload["cpu"]["cores"],
+                system_load=payload["cpu"]["systemLoad"],
+                lavalink_load=payload["cpu"]["lavalinkLoad"],
+                uptime=payload["uptime"],
             )
 
         elif payload["op"] == "playerUpdate":
