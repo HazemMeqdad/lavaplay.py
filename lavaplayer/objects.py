@@ -10,9 +10,14 @@ class Info:
     Info websocket for connection
     """
     playing_players: int
+    memory_reservable: int
     memory_used: int
     memory_free: int
+    memory_allocated: int
     players: int
+    cpu_cores: int
+    system_load: float
+    lavalink_load: float
     uptime: int
 
 
