@@ -59,8 +59,7 @@ class WS:
                 if session is None:
                     await self.check_connection()
             except (aiohttp.ClientConnectorError, aiohttp.WSServerHandshakeError, aiohttp.ServerDisconnectedError) as error:
-                
-                if isinstance(error, aiohttp.ClientConnectorError):
+                if isinstance(error, (aiohttp.ClientConnectorError, aiohttp.ServerDisconnectedError)):
                     _LOGGER.error(f"Could not connect to websocket: {error}")
                     _LOGGER.warning("Reconnecting to websocket after 10 seconds")  
                     await asyncio.sleep(10)
@@ -71,12 +70,6 @@ class WS:
                         _LOGGER.warning("Password authentication failed - closing websocket")
                         return
                     _LOGGER.warning("Please check your websocket port - closing websocket")
-                elif isinstance(error, aiohttp.ServerDisconnectedError):
-                    _LOGGER.error(f"Could not connect to websocket: {error}")
-                    _LOGGER.warning("Reconnecting to websocket after 10 seconds")
-                    await asyncio.sleep(10)
-                    await self._connect()
-                    return
             _LOGGER.info("Connected to websocket")
             self.is_connect = True
 
@@ -109,10 +102,15 @@ class WS:
         if payload["op"] == "stats":
             self.client.info = Info(
                 playing_players=payload["playingPlayers"],
+                memory_reservable=payload["memory"]["reservable"],
                 memory_used=payload["memory"]["used"],
                 memory_free=payload["memory"]["free"],
+                memory_allocated=payload["memory"]["allocated"],
                 players=payload["players"],
-                uptime=payload["uptime"]
+                cpu_cores=payload["cpu"]["cores"],
+                system_load=payload["cpu"]["systemLoad"],
+                lavalink_load=payload["cpu"]["lavalinkLoad"],
+                uptime=payload["uptime"],
             )
 
         elif payload["op"] == "playerUpdate":

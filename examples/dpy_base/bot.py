@@ -6,11 +6,10 @@ PREFIX = ","
 TOKEN = "..."
 
 bot = commands.Bot(PREFIX, enable_debug_events=True)
-lavalink = lavaplayer.LavalinkClient(
-    host="localhost",
-    port=2333,
-    password="youshallnotpass",
-    user_id=893385351362670593
+lavalink = lavaplayer.Lavalink(
+    host="localhost",  # Lavalink host
+    port=2333,  # Lavalink port
+    password="youshallnotpass",  # Lavalink password
 )
 
 
@@ -21,6 +20,9 @@ async def close():
 
 @bot.event
 async def on_ready():
+    lavalink.set_user_id(bot.user.id)
+    lavalink.set_event_loop(bot.loop)
+    lavalink.connect()
     print("Bot is ready.")
 
 @bot.command()
@@ -38,21 +40,18 @@ async def leave(ctx: commands.Context):
 
 @bot.command()
 async def play(ctx: commands.Context, *, query: str):
-    try:
-        tracks = await lavalink.auto_search_tracks(query)
-    except lavaplayer.TrackLoadFailed as exc:
-        return await ctx.send(exc.message)
-
+    tracks = await lavalink.auto_search_tracks(query)
     if not tracks:
-        return await ctx.send("No results found.")
-
-    # Playlist
-    if isinstance(tracks, lavaplayer.PlayList):
+        await ctx.send("No results found.")
+        return
+    elif isinstance(tracks, lavaplayer.TrackLoadFailed):
+        await ctx.send("Track load failed. Try again.\n```" + tracks.message + "```")
+        return
+    elif isinstance(tracks, lavaplayer.PlayList):
         msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
         await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
         await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
         return
-
     track = tracks[0]
     await lavalink.play(ctx.guild.id, track, ctx.author.id)
     await ctx.send(f"Now playing: {track.title}")
@@ -83,8 +82,7 @@ async def queue(ctx: commands.Context):
     queue = lavalink.queue(ctx.guild.id)
     if not queue:
         return await ctx.send("No tracks in queue.")
-    tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]
-    await ctx.send("\n".join(tracks))
+    await ctx.send("\n".join([f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]))
 
 @bot.command()
 async def volume(ctx: commands.Context, volume: int):
@@ -152,5 +150,4 @@ async def on_socket_response(data):
             channel_id,
         )
 
-lavalink.connect()
 bot.run(TOKEN)

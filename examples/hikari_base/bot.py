@@ -1,27 +1,30 @@
+import asyncio
 import lavaplayer
 import hikari
 import logging
 import os
 
 
-TOKEN = "..."  # Replace with your token
 PREFIX = ","  # Replace with your prefix
-
+TOKEN = "..."  # Replace with your token
 
 bot = hikari.GatewayBot(TOKEN)
 lavalink = lavaplayer.LavalinkClient(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
-    user_id=123,  # Your bot id
 )
 
+@bot.listen(hikari.StartedEvent)
+async def on_start(event: hikari.StartedEvent):
+    lavalink.set_user_id(bot.get_me().id)
+    lavalink.set_event_loop(asyncio.get_event_loop())
+    lavalink.connect()
 
 # https://github.com/vicky5124/lavasnek_rs/blob/master/examples/pure_hikari_basic_queue/bot.py#L16
 def is_command(cmd_name: str, content: str) -> bool:
     """Check if the message sent is a valid command."""
     return content.startswith(f"{PREFIX}{cmd_name}")
-
 
 # On voice state update the bot will update the lavalink node
 @bot.listen(hikari.VoiceStateUpdateEvent)
@@ -51,15 +54,21 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         await bot.update_voice_state(event.guild_id, None)
         await event.message.respond("The bot has left the voice channel")
 
+    elif is_command("position", event.content):
+        node = await lavalink.get_guild_node(event.guild_id)
+        await event.message.respond(f"Position: {node.queue[0].position}s")
+
     elif is_command("play", event.content):
-        try:
-            result = await lavalink.auto_search_tracks(event.content.removeprefix(f"{PREFIX}play "))
-        except lavaplayer.TrackLoadFailed as exc:
-            return await event.message.respond(f"Error loading track: {exc.message}") 
+        print(event.content.replace(f"{PREFIX}play ", ""))
+        result = await lavalink.auto_search_tracks(event.content.replace(f"{PREFIX}play ", ""))
+
         if not result:
             await event.message.respond("No results found.")
             return
-        if isinstance(result, lavaplayer.PlayList):
+        elif isinstance(result, lavaplayer.TrackLoadFailed):
+            await event.message.respond(f"Could not load track: {result.message}")
+            return
+        elif isinstance(result, lavaplayer.PlayList):
             await lavalink.add_to_queue(event.guild_id, result.tracks, event.author_id)
             await event.message.respond(f"Added playlist {result.name}")
             return
@@ -110,6 +119,10 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         await lavalink.repeat(event.guild_id, False)
         await event.message.respond("The player has set the queue to not repeat")
 
+    elif is_command("list_repeat", event.content):
+        await lavalink.queue_repeat(event.guild_id, True)
+        await event.message.respond("The bot has set the queue to repeat")
+
     elif is_command("search", event.content):
         try:
             result = await lavalink.auto_search_tracks(event.conetnt.removeprefix(f"{PREFIX}search "))
@@ -151,10 +164,9 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
             "resume", "stop", "skip", "queue",
             "volume", "np", "shuffle", "repeat",
             "norepeat", "search", "seek", "destroy",
-            "filter"
+            "filter", "list_repeat"
         ]
         await event.message.respond(", ".join([f"`{PREFIX}{command}`" for command in commands]))
-
 
 # -------------------------------- #
 # track start event
@@ -181,5 +193,4 @@ if __name__ == "__main__":
         import uvloop
 
         uvloop.install()
-    lavalink.connect()
     bot.run()

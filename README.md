@@ -33,11 +33,11 @@ import lavaplayer
 
 bot = hikari.GatewayBot("token")
 
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplayer.Lavalink(
     host="localhost",
     port=2333,
     password="youshallnotpass",
-    bot_id=123
+    user_id=123
 )
 
 lavalink.connect()

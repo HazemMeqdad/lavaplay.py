@@ -1,0 +1,1 @@
+hikari-tanjun==2.5.2a1

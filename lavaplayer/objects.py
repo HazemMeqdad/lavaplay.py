@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from lavaplayer.exceptions import FiltersError
 import typing as t
 
@@ -10,9 +10,14 @@ class Info:
     Info websocket for connection
     """
     playing_players: int
+    memory_reservable: int
     memory_used: int
     memory_free: int
+    memory_allocated: int
     players: int
+    cpu_cores: int
+    system_load: float
+    lavalink_load: float
     uptime: int
 
 
@@ -23,15 +28,16 @@ class Track:
     """
     track: str
     identifier: str
-    isSeekable: bool
+    is_seekable: bool
     author: str
     length: int
-    isStream: bool
+    is_stream: bool
     position: int
     title: str
     uri: str
     requester: t.Union[str, None] = None
-    sourceName: t.Optional[str] = None
+    source_name: t.Optional[str] = None
+    timestamp: t.Optional[t.Any] = None
     """
     optional option to save a requester for the track
     """

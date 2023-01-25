@@ -66,7 +66,7 @@ class LavalinkRest:
         track: :class:`str`
             track base64 encoded text for request like `ytsearch:`
         """
-        return await self.request("GET", routes.DECODETRACK.format(track=track))
+        return await self.request("GET", routes.DECODETRACK, data={"track": track})
 
     async def decode_tracks(self, tracks: list) -> list:
         """
@@ -95,6 +95,10 @@ class LavalinkRest:
         """
         return await self.request("GET", routes.UNMARK_ALL_FAILED_ADDRESS)
     
+    async def plugins(self) -> dict:
+        """
+        """
+        return await self.request("GET", routes.PLUGINS)
 
 class Api(LavalinkRest):
     """
