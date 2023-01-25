@@ -6,7 +6,7 @@ from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
 from .emitter import Emitter
 from .websocket import WS
 from .api import LavalinkRest
-from .objects import Info, Track, Node, Filters, ConnectionInfo, Event, PlayList
+from .objects import Stats, Track, Node, Filters, ConnectionInfo, Event, PlayList
 from . import __version__
 from .utlits import get_event_loop, prossing_tracks
 
@@ -23,6 +23,8 @@ class Lavalink:
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
+    v3: :class:`bool`
+        Is server using v3 api, new lavalink version after 3.7 is using v3 api.
     user_id: :class:`int | None`
         The bot id when you keep None you need to set on a started event on ur library used.
     num_shards: :class:`int`
@@ -36,6 +38,7 @@ class Lavalink:
         host: t.Optional[str] = "127.0.0.1",
         port: int,
         password: str,
+        v3: bool = True,
         user_id: t.Optional[int] = None,
         num_shards: int = 1,
         is_ssl: bool = False,
@@ -47,6 +50,7 @@ class Lavalink:
         self.user_id = user_id
         self.num_shards = num_shards
         self.is_ssl = is_ssl
+        self.v3 = v3
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
@@ -54,7 +58,7 @@ class Lavalink:
 
         # Unique identifier for the client.
         self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
-        self.info: Info = None
+        self.stats: Stats = None
         self._nodes: t.Dict[int, Node] = {}
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
         self._task_loop: asyncio.Task = None
@@ -766,7 +770,8 @@ class Lavalink:
             is_ssl=self.is_ssl, 
             password=self.password, 
             user_id=self.user_id, 
-            num_shards=self.num_shards
+            num_shards=self.num_shards,
+            v3=self.v3
         )
         self.loop.create_task(self._ws._connect())
 

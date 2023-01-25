@@ -2,15 +2,7 @@ import asyncio
 import aiohttp
 import logging
 from lavaplayer.utlits import generate_resume_key
-from .objects import (
-    Info,
-    PlayerUpdateEvent,
-    TrackStartEvent,
-    TrackEndEvent,
-    TrackExceptionEvent,
-    TrackStuckEvent,
-    WebSocketClosedEvent,
-)
+from .objects import *
 from .emitter import Emitter
 import typing as t
 from . import __version__
@@ -33,10 +25,13 @@ class WS:
         user_id: int = None,
         num_shards: int = None,
         resume_key: t.Optional[str] = None,
-        loop: t.Optional[asyncio.AbstractEventLoop] = None
+        loop: t.Optional[asyncio.AbstractEventLoop] = None,
+        v3: bool = True,
     ) -> None:
         self.ws = None
         self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}"
+        if v3:
+            self.ws_url += "/v3/websocket"
         self.client = client
         self._headers = {
             "Authorization": password,
@@ -70,7 +65,6 @@ class WS:
                         _LOGGER.warning("Password authentication failed - closing websocket")
                         return
                     _LOGGER.warning("Please check your websocket port - closing websocket")
-            _LOGGER.info("Connected to websocket")
             self.is_connect = True
 
             self.resume_key = generate_resume_key()
@@ -99,20 +93,12 @@ class WS:
             await self._connect()
 
     async def callback(self, payload: dict):
-        if payload["op"] == "stats":
-            self.client.info = Info(
-                playing_players=payload["playingPlayers"],
-                memory_reservable=payload["memory"]["reservable"],
-                memory_used=payload["memory"]["used"],
-                memory_free=payload["memory"]["free"],
-                memory_allocated=payload["memory"]["allocated"],
-                players=payload["players"],
-                cpu_cores=payload["cpu"]["cores"],
-                system_load=payload["cpu"]["systemLoad"],
-                lavalink_load=payload["cpu"]["lavalinkLoad"],
-                uptime=payload["uptime"],
-            )
-
+        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#ready-op
+        if payload["op"] == "ready":
+            _LOGGER.info("Lavalink client is ready")
+            self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
+        
+        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
         elif payload["op"] == "playerUpdate":
             guild_id = int(payload["guildId"])
             node = await self.client.get_guild_node(guild_id)
@@ -130,7 +116,19 @@ class WS:
                 connected=payload["state"].get("connected", None),
             )
             self.emitter.emit("PlayerUpdateEvent", data)
+        
+        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#stats-op
+        elif payload["op"] == "stats":
+            payload.pop("op")
+            # Fix types
+            if payload.get("frameStats") is not None:
+                payload["frameStats"] = FrameStats.from_kwargs(**payload["frameStats"])
+            payload["memory"] = Memory.from_kwargs(**payload["memory"])
+            payload["cpu"] = Cpu.from_kwargs(**payload["cpu"])
+            self.client.stats = Stats.from_kwargs(**payload)
+            self.emitter.emit("StatsUpdateEvent", StatsUpdateEvent(self.client.stats))
 
+        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#event-op
         elif payload["op"] == "event" and payload.get("track") is not None:
             await self.event_dispatch(payload)
             

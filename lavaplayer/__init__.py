@@ -12,10 +12,10 @@ __version__ = "1.0.9a"
 
 from .client import LavalinkClient, Lavalink
 from .objects import (
-    Info, Track, Node, ConnectionInfo,
+    Stats, Track, Node, ConnectionInfo,
     PlayList, Event, TrackStartEvent, TrackEndEvent,
     TrackExceptionEvent, TrackStuckEvent, WebSocketClosedEvent,
-    PlayerUpdateEvent, ErrorEvent, Filters
+    PlayerUpdateEvent, ErrorEvent, Filters, ReadyEvent
 )
 from .api import Api
 from .exceptions import (

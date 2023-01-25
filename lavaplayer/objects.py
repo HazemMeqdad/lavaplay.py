@@ -125,6 +125,12 @@ class ReadyEvent(Event):
     resumed: bool
     sessionId: str
 
+@classmethod
+class StatsUpdateEvent(Event):
+    """
+    Event on stats update.
+    """
+    stats: Stats
 
 @dataclass
 class TrackStartEvent(Event):
