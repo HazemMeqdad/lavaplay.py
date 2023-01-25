@@ -26,11 +26,11 @@ class WS:
         num_shards: int = None,
         resume_key: t.Optional[str] = None,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
-        v3: bool = True,
+        v4: bool = True,
     ) -> None:
         self.ws = None
         self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}"
-        if v3:
+        if v4 is False:
             self.ws_url += "/v3/websocket"
         self.client = client
         self._headers = {
@@ -100,21 +100,19 @@ class WS:
         
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
         elif payload["op"] == "playerUpdate":
+            payload.pop("op")
             guild_id = int(payload["guildId"])
             node = await self.client.get_guild_node(guild_id)
-            position = payload["state"].get("position")
             if node is None:
                 return
-            
+            position = payload["state"].get("position")
+            position = position / 1000 if isinstance(position, int) else None
             if node.queue:
-                node.queue[0].position = position / 1000
+                node.queue[0].position = position
                 await self.client.set_guild_node(guild_id, node)
-            data = PlayerUpdateEvent(
-                guild_id=guild_id,
-                time=payload["state"]["time"],
-                position=position / 1000 if isinstance(position, int) else None,
-                connected=payload["state"].get("connected", None),
-            )
+            payload["state"]["position"] = position
+            payload["state"] = PlayerState.from_kwargs(**payload["state"])
+            data = PlayerUpdateEvent.from_kwargs(**payload)
             self.emitter.emit("PlayerUpdateEvent", data)
         
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#stats-op

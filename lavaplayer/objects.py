@@ -125,7 +125,7 @@ class ReadyEvent(Event):
     resumed: bool
     sessionId: str
 
-@classmethod
+@dataclass
 class StatsUpdateEvent(Event):
     """
     Event on stats update.
@@ -186,15 +186,22 @@ class WebSocketClosedEvent(Event):
 
 
 @dataclass
+class PlayerState(BaseObject):
+    """
+    Event on player update.
+    """
+    time: int
+    connected: bool
+    ping: int
+    position: t.Optional[int] = None
+
+@dataclass
 class PlayerUpdateEvent(Event):
     """
     Event on player update.
     """
-    guild_id: int
-    time: int
-    position: t.Optional[int]
-    connected: t.Optional[bool]
-
+    guildId: int
+    state: PlayerState
 
 @dataclass
 class ErrorEvent(Event):

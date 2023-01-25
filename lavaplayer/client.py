@@ -23,8 +23,8 @@ class Lavalink:
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
-    v3: :class:`bool`
-        Is server using v3 api, new lavalink version after 3.7 is using v3 api.
+    v4: :class:`bool`
+        Is server using v4 api, new lavalink version after 3.7 is using v4 api.
     user_id: :class:`int | None`
         The bot id when you keep None you need to set on a started event on ur library used.
     num_shards: :class:`int`
@@ -38,7 +38,7 @@ class Lavalink:
         host: t.Optional[str] = "127.0.0.1",
         port: int,
         password: str,
-        v3: bool = True,
+        v4: bool = True,
         user_id: t.Optional[int] = None,
         num_shards: int = 1,
         is_ssl: bool = False,
@@ -50,7 +50,7 @@ class Lavalink:
         self.user_id = user_id
         self.num_shards = num_shards
         self.is_ssl = is_ssl
-        self.v3 = v3
+        self.v4 = v4
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
@@ -771,7 +771,7 @@ class Lavalink:
             password=self.password, 
             user_id=self.user_id, 
             num_shards=self.num_shards,
-            v3=self.v3
+            v4=self.v4
         )
         self.loop.create_task(self._ws._connect())
 
