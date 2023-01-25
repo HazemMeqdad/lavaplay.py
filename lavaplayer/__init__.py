@@ -11,12 +11,8 @@ __license__ = "MIT"
 __version__ = "1.0.9a"
 
 from .client import LavalinkClient, Lavalink
-from .objects import (
-    Stats, Track, Node, ConnectionInfo,
-    PlayList, Event, TrackStartEvent, TrackEndEvent,
-    TrackExceptionEvent, TrackStuckEvent, WebSocketClosedEvent,
-    PlayerUpdateEvent, ErrorEvent, Filters, ReadyEvent
-)
+from .objects import *
+from .events import *
 from .api import Api
 from .exceptions import (
     NodeError, FiltersError, VolumeError,

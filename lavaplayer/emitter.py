@@ -2,7 +2,7 @@ import asyncio
 import typing as t
 from collections import deque
 import logging
-from .objects import Event
+from .events import Event
 
 _LOGGER = logging.getLogger("lavaplayer.event_manger")
 

@@ -6,7 +6,8 @@ from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
 from .emitter import Emitter
 from .websocket import WS
 from .api import LavalinkRest
-from .objects import Stats, Track, Node, Filters, ConnectionInfo, Event, PlayList
+from .objects import Stats, Track, Node, Filters, ConnectionInfo, PlayList
+from .events import Event
 from . import __version__
 from .utlits import get_event_loop, prossing_tracks
 

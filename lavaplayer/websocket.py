@@ -3,6 +3,7 @@ import aiohttp
 import logging
 from lavaplayer.utlits import generate_resume_key
 from .objects import *
+from .events import *
 from .emitter import Emitter
 import typing as t
 from . import __version__
