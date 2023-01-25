@@ -26,22 +26,36 @@ class BaseObject(object):
             setattr(ret, new_name, new_val)
         return ret
 
+@dataclass
+class Memory(BaseObject):
+    free: int
+    used: int
+    allocated: int
+    reservable: int
 
 @dataclass
-class Info(BaseObject):
+class Cpu(BaseObject):
+    cores: int
+    systemLoad: float
+    lavalinkLoad: float
+
+@dataclass
+class FrameStats(BaseObject):
+    sent: int
+    nulled: int
+    deficit: int
+
+@dataclass
+class Stats(BaseObject):
     """
     Info websocket for connection
     """
-    playing_players: int
-    memory_reservable: int
-    memory_used: int
-    memory_free: int
-    memory_allocated: int
     players: int
-    cpu_cores: int
-    system_load: float
-    lavalink_load: float
+    playingPlayers: int
     uptime: int
+    memory: Memory
+    cpu: Cpu
+    frameStats: t.Optional[FrameStats] = None
 
 
 @dataclass(repr=True)
@@ -67,7 +81,6 @@ class Track(BaseObject):
 
     def __repr__(self) -> str:
         return self.title
-
 
 @dataclass
 class Node(BaseObject):
@@ -103,6 +116,15 @@ class Event(BaseObject):
     """
     The class is a base event for websocket.
     """
+
+@dataclass
+class ReadyEvent(Event):
+    """
+    Event on ready. call when the websocket is ready.
+    """
+    resumed: bool
+    sessionId: str
+
 
 @dataclass
 class TrackStartEvent(Event):
