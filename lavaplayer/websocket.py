@@ -132,11 +132,16 @@ class WS:
             await self.event_dispatch(payload)
             
     async def event_dispatch(self, payload: dict):
-        if payload.get("track"):
-            track = await self.client.decodetrack(payload["track"])
+        # encodedTrack is for Lavalink new version v4
+        if payload.get("track") or payload.get("encodedTrack"):
+            track = await self.client.decodetrack(payload["track"] or payload.get("encodedTrack"))
         event = payload["type"]
 
         guild_id = int(payload["guildId"])
+        payload.pop("op")
+        payload.pop("type")
+        payload.pop("guildId")
+        payload["guild_id"] = guild_id
 
         node = await self.client.get_guild_node(guild_id)
 
@@ -163,13 +168,14 @@ class WS:
                 await self.client.play(guild_id, node.queue[0], node.queue[0].requester, True)
 
         elif event == "TrackExceptionEvent":
-            self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent(track, guild_id, payload.get("exception"), payload.get("message"), payload.get("severity"), payload.get("cause")))
+            payload["exception"] = TrackException.from_kwargs(**payload["exception"])
+            self.emitter.emit("TrackExceptionEvent", TrackExceptionEvent.from_kwargs(**payload))
 
         elif event == "TrackStuckEvent":
-            self.emitter.emit("TrackStuckEvent", TrackStuckEvent(track, guild_id, payload.get("thresholdMs")))
+            self.emitter.emit("TrackStuckEvent", TrackStuckEvent.from_kwargs(**payload))
 
         elif event == "WebSocketClosedEvent":
-            self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent(guild_id, payload.get("code"), payload.get("reason"), payload.get("byRemote")))
+            self.emitter.emit("WebSocketClosedEvent", WebSocketClosedEvent.from_kwargs(**payload))
         
         else:
             _LOGGER.warning(f"Unknown event: {event}")
@@ -179,6 +185,9 @@ class WS:
         return self.is_connect and self.ws.closed is False
 
     async def send(self, payload):  # only dict
+        """
+        Will not be call on new lavalink version v4
+        """
         if not self.is_connected:
             _LOGGER.error("Not connected to websocket")
             return

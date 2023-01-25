@@ -13,7 +13,7 @@ class ReadyEvent(Event):
     Event on ready. call when the websocket is ready.
     """
     resumed: bool
-    sessionId: str
+    session_id: str
 
 @dataclass
 class StatsUpdateEvent(Event):
@@ -40,6 +40,14 @@ class TrackEndEvent(Event):
     guild_id: int
     reason: str
 
+@dataclass
+class TrackException(Event):
+    """
+    Event on exception.
+    """
+    severity: t.Optional[str]
+    cause: t.Optional[str]
+    message: t.Optional[str] = None
 
 @dataclass
 class TrackExceptionEvent(Event):
@@ -48,10 +56,9 @@ class TrackExceptionEvent(Event):
     """
     track: Track
     guild_id: int
-    exception: str
-    message: t.Optional[str]
-    severity: t.Optional[str]
-    cause: t.Optional[str]
+    exception: TrackException
+
+
 
 
 @dataclass
