@@ -5,7 +5,7 @@ import random
 from lavaplayer.exceptions import NodeError, VolumeError, TrackLoadFailed
 from .emitter import Emitter
 from .websocket import WS
-from .api import LavalinkRest
+from .api import RestApi
 from .objects import Stats, Track, Node, Filters, ConnectionInfo, PlayList
 from .events import Event
 from . import __version__
@@ -58,7 +58,7 @@ class Lavalink:
         self._ws: t.Optional[WS] = None
 
         # Unique identifier for the client.
-        self.rest = LavalinkRest(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
+        self.rest = RestApi(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
         self.stats: Stats = None
         self._nodes: t.Dict[int, Node] = {}
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
