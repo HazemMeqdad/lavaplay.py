@@ -10,7 +10,9 @@ from .objects import Stats, Track, Node, Filters, ConnectionInfo, PlayList
 from .events import Event
 from . import __version__
 from .utlits import get_event_loop, prossing_tracks
+import logging
 
+_LOGGER = logging.getLogger("lavaplayer.client")
 
 class Lavalink:
     """
@@ -318,22 +320,18 @@ class Lavalink:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
-        payload = {
-            "op": "play",
-            "guildId": str(guild_id),
-            "track": track.track,
-            "startTime": "0",
-            "noReplace": False
-        }
-        if start:
-            await self._ws.send(payload)
-            return
+        if len(node.queue) == 0 or start == True:
+            await self.rest.update_player(
+                session_id=self._ws.session_id, 
+                guild_id=guild_id,
+                noReplace=not start,
+                data={
+                    "encodedTrack": track.track
+                }
+            )
         track.requester = requester
         node.queue.append(track)
         await self.set_guild_node(guild_id, node)
-        if len(node.queue) != 1:
-            return
-        await self._ws.send(payload)
 
     async def queue(self, guild_id: int, /) -> t.List[Track]:
         """
@@ -400,7 +398,13 @@ class Lavalink:
         if not filters:
             filters = Filters()
         filters._payload["guildId"] = str(guild_id)
-        await self._ws.send(filters._payload)
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "filters": filters._payload
+            }
+        )
 
     async def stop(self, guild_id: int, /) -> None:
         """
@@ -421,10 +425,13 @@ class Lavalink:
             raise NodeError("Node not found", guild_id)
         node.queue.clear()
         await self.set_guild_node(guild_id, node)
-        await self._ws.send({
-            "op": "stop",
-            "guildId": str(guild_id)
-        })
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "encodedTrack": None
+            }
+        )
         return node
 
     async def skip(self, guild_id: int, /) -> None:
@@ -446,10 +453,13 @@ class Lavalink:
             raise NodeError("Node not found", guild_id)
         if len(node.queue) == 0:
             return
-        await self._ws.send({
-            "op": "stop",
-            "guildId": str(guild_id)
-        })
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "encodedTrack": None
+            }
+        )
         return node
 
     async def pause(self, guild_id: int, /, stats: bool) -> None:
@@ -471,11 +481,13 @@ class Lavalink:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
-        await self._ws.send({
-            "op": "pause",
-            "guildId": str(guild_id),
-            "pause": stats
-        })
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "paused": stats
+            }
+        )
 
     async def seek(self, guild_id: int, /, position: int) -> None:
         """
@@ -496,11 +508,13 @@ class Lavalink:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
-        await self._ws.send({
-            "op": "seek",
-            "guildId": str(guild_id),
-            "position": position
-        })
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "position": position
+            }
+        )
 
     async def volume(self, guild_id: int, /, volume: int) -> None:
         """
@@ -529,11 +543,13 @@ class Lavalink:
             raise NodeError("Node not found", guild_id)
         node.volume = volume
         await self.set_guild_node(guild_id, node)
-        await self._ws.send({
-            "op": "volume",
-            "guildId": str(guild_id),
-            "volume": volume
-        })
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "volume": volume
+            }
+        )
 
     async def destroy(self, guild_id: int, /) -> None:
         """
@@ -554,11 +570,8 @@ class Lavalink:
         node = await self.get_guild_node(guild_id)
         if not node:
             raise NodeError("Node not found", guild_id)
+        await self.rest.destroy_player(self._ws.session_id, guild_id)
         await self.remove_guild_node(guild_id)
-        await self._ws.send({
-            "op": "destroy",
-            "guildId": str(guild_id)
-        })
 
     async def shuffle(self, guild_id: int, /) -> t.Union[Node, t.List]:
         """
@@ -655,16 +668,17 @@ class Lavalink:
         if not channel_id:
             await self.destroy(guild_id)
             return
-        await self._ws.send({
-            "op": "voiceUpdate",
-            "guildId": str(guild_id),
-            "sessionId": session_id,
-            "event": {
-                "token": token,
-                "guild_id": str(guild_id),
-                "endpoint": endpoint.replace("wss://", "")
+        await self.rest.update_player(
+            session_id=self._ws.session_id,
+            guild_id=guild_id,
+            data={
+                "voice": {
+                    "token": token,
+                    "sessionId": session_id,
+                    "endpoint": endpoint.replace("wss://", "")
+                }
             }
-        })
+        )
         await self.create_new_node(guild_id, is_connected=True)
 
     async def raw_voice_state_update(self, guild_id: int, /, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
@@ -705,7 +719,7 @@ class Lavalink:
         connection_info = self._voice_handlers.get(guild_id)
         if not connection_info:
             return
-        await self.voice_update(guild_id, connection_info.session_id, token, endpoint, connection_info.channel_id)
+        await self.voice_update(guild_id, self._ws.session_id, token, endpoint, connection_info.channel_id)
 
     async def wait_for_connection(self, guild_id: int, /) -> t.Optional[Node]:
         """

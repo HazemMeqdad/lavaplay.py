@@ -13,7 +13,7 @@ __version__ = "1.0.9a"
 from .client import LavalinkClient, Lavalink
 from .objects import *
 from .events import *
-from .api import Api
+from .api import RestApi
 from .exceptions import (
     NodeError, FiltersError, VolumeError,
     NotConnectedError, ConnectedError, TrackLoadFailed

@@ -13,7 +13,7 @@ class ReadyEvent(Event):
     Event on ready. call when the websocket is ready.
     """
     resumed: bool
-    session_id: str
+    sessionId: str
 
 @dataclass
 class StatsUpdateEvent(Event):

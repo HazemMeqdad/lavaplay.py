@@ -44,7 +44,12 @@ class WS:
         self.emitter: Emitter = client.event_manager
         self.is_connect: bool = False
         self.resume_key = resume_key
+        self._session_id: str = None
     
+    @property
+    def session_id(self) -> str:
+        return self._session_id
+
     async def _connect(self):
         if self.resume_key:
             self._headers["Resume-Key"] = self.resume_key
@@ -97,6 +102,7 @@ class WS:
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#ready-op
         if payload["op"] == "ready":
             _LOGGER.info("Lavalink client is ready")
+            self._session_id = payload["sessionId"]
             self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
         
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
@@ -133,8 +139,9 @@ class WS:
             
     async def event_dispatch(self, payload: dict):
         # encodedTrack is for Lavalink new version v4
-        if payload.get("track") or payload.get("encodedTrack"):
-            track = await self.client.decodetrack(payload["track"] or payload.get("encodedTrack"))
+        print(payload)
+        if payload.get("encodedTrack"):
+            track = await self.client.decodetrack(payload.get("encodedTrack"))
         event = payload["type"]
 
         guild_id = int(payload["guildId"])

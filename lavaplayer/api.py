@@ -52,21 +52,21 @@ class RestApi:
                 _LOGGER.debug(f"{method} {self.rest_uri + rout}")
                 return await response.json()
     
-    async def load_tracks(self, query: str) -> dict:
+    async def load_tracks(self, identifier: str) -> dict:
         """
         This function makes a request to the rest api for lavalink
 
         Parameters
         ---------
-        query: :class:`str`
-            The query for search tracks.
+        identifier: :class:`str`
+            The identifier for search tracks.
 
         Returns
         -------
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("GET", routes.TRACK_LOADING.format(query))
+        res = await self.request("GET", routes.TRACK_LOADING.format(identifier=identifier))
         return res
     
     async def decode_track(self, track: str) -> dict:
@@ -83,7 +83,7 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("GET", routes.TRACK_DECODEING.format(track))
+        res = await self.request("GET", routes.TRACK_DECODEING.format(encodedTrack=track))
         return res
     
     async def decode_tracks(self, tracks: list) -> dict:
@@ -182,7 +182,7 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("GET", routes.GET_PLAYERS.format(session_id))
+        res = await self.request("GET", routes.GET_PLAYERS.format(sessionId=session_id))
         return res
     
     async def get_player(self, session_id: str, guild_id: str) -> dict:
@@ -201,10 +201,10 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("GET", routes.GET_PLAYER.format(session_id, guild_id))
+        res = await self.request("GET", routes.GET_PLAYER.format(sessionId=session_id, guildId=guild_id))
         return res
     
-    async def update_player(self, session_id: str, guild_id: str, noReplace: bool = True) -> dict:
+    async def update_player(self, session_id: str, guild_id: int, noReplace: bool = True, data: dict = {}) -> dict:
         """
         This function makes a request to the rest api for lavalink
 
@@ -212,7 +212,7 @@ class RestApi:
         ---------
         session_id: :class:`str`
             The session id for update player.
-        guild_id: :class:`str`
+        guild_id: :class:`int`
             The guild id for update player.
         noReplace: :class:`bool`
             The noReplace for update player.
@@ -222,7 +222,7 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("PATCH", routes.UPDATE_PLAYER.format(session_id, guild_id), data={"noReplace": noReplace})
+        res = await self.request("PATCH", routes.UPDATE_PLAYER.format(sessionId=session_id, guildId=guild_id), data=data)
         return res
     
     async def destroy_player(self, session_id: str, guild_id: int) -> None:
@@ -236,7 +236,7 @@ class RestApi:
         guild_id: :class:`str`
             The guild id for destroy player.
         """
-        await self.request("POST", routes.DESTROY_PLAYER.format(session_id, guild_id))
+        await self.request("DELETE", routes.DESTROY_PLAYER.format(sessionId=session_id, guildId=guild_id))
         
     async def update_session(self, session_id: str, data: dict) -> dict:
         """
@@ -254,7 +254,7 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("PATCH", routes.UPDATE_SESSION.format(session_id), data=data)
+        res = await self.request("PATCH", routes.UPDATE_SESSION.format(sessionId=session_id), data=data)
         return res
          
 
