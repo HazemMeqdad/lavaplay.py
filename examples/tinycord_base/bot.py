@@ -1,5 +1,5 @@
 import tinycord
-import lavaplayer
+import lavaplay
 
 TOKEN = ""
 client = tinycord.Client(
@@ -7,7 +7,7 @@ client = tinycord.Client(
     intents=tinycord.Intents.all()
 )
 
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplay.LavalinkClient(
     host="127.0.0.1",
     port=8888,
     password="password",
@@ -58,14 +58,14 @@ async def on_message(message: tinycord.Message):
     if message.content.startswith('!play'):
         try:
             result = await lavalink.auto_search_tracks(message.content.removeprefix('!play '))
-        except lavaplayer.TrackLoadFailed as exc:
+        except lavaplay.TrackLoadFailed as exc:
             return await message.channel.send(f"Error loading track: {exc.message}")
         
         if not result:
             await message.channel.send("No results found.")
             return
 
-        if isinstance(result, lavaplayer.PlayList):
+        if isinstance(result, lavaplay.PlayList):
             await lavalink.add_to_queue(message.guild_id, result.tracks, message.author.id)
             await message.channel.send(f"added {len(result.tracks)} tracks to queue")
             return 
@@ -149,7 +149,7 @@ async def on_message(message: tinycord.Message):
         await message.channel.send(embeds=[embed])
 
     if message.content.startswith('!filter'):
-        filters = lavaplayer.Filters()
+        filters = lavaplay.Filters()
         filters.low_pass(50)
         await lavalink.filters(message.guild_id, filters)
 

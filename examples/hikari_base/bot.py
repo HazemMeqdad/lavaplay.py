@@ -1,5 +1,5 @@
 import asyncio
-import lavaplayer
+import lavaplay
 import hikari
 import logging
 import os
@@ -9,7 +9,7 @@ PREFIX = ","  # Replace with your prefix
 TOKEN = "..."  # Replace with your token
 
 bot = hikari.GatewayBot(TOKEN)
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplay.LavalinkClient(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
@@ -65,10 +65,10 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         if not result:
             await event.message.respond("No results found.")
             return
-        elif isinstance(result, lavaplayer.TrackLoadFailed):
+        elif isinstance(result, lavaplay.TrackLoadFailed):
             await event.message.respond(f"Could not load track: {result.message}")
             return
-        elif isinstance(result, lavaplayer.PlayList):
+        elif isinstance(result, lavaplay.PlayList):
             await lavalink.add_to_queue(event.guild_id, result.tracks, event.author_id)
             await event.message.respond(f"Added playlist {result.name}")
             return
@@ -126,12 +126,12 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
     elif is_command("search", event.content):
         try:
             result = await lavalink.auto_search_tracks(event.conetnt.removeprefix(f"{PREFIX}search "))
-        except lavaplayer.TrackLoadFailed as exc:
+        except lavaplay.TrackLoadFailed as exc:
             return await event.message.respond(f"Error loading track: {exc}") 
         if not result:
             await event.message.respond("No results found.")
             return
-        if isinstance(result, lavaplayer.PlayList):
+        if isinstance(result, lavaplay.PlayList):
             await event.message.respond(f"Playlist {result.name}")
             return
         await event.message.respond(f"{result[0].title}")
@@ -154,7 +154,7 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
         await event.message.respond("The player has been destroyed.")
 
     elif is_command("filter", event.content):
-        filters = lavaplayer.Filters()
+        filters = lavaplay.Filters()
         filters.low_pass(50)
         await lavalink.filters(event.guild_id, filters)
 
@@ -170,20 +170,20 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
 
 # -------------------------------- #
 # track start event
-@lavalink.listen(lavaplayer.TrackStartEvent)
-async def track_start_event(event: lavaplayer.TrackStartEvent):
+@lavalink.listen(lavaplay.TrackStartEvent)
+async def track_start_event(event: lavaplay.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
 
 
 # track end event
-@lavalink.listen(lavaplayer.TrackEndEvent)
-async def track_end_event(event: lavaplayer.TrackEndEvent):
+@lavalink.listen(lavaplay.TrackEndEvent)
+async def track_end_event(event: lavaplay.TrackEndEvent):
     logging.info(f"track end: {event.track.title}")
 
 
 # web socket closed event
-@lavalink.listen(lavaplayer.WebSocketClosedEvent)
-async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
+@lavalink.listen(lavaplay.WebSocketClosedEvent)
+async def web_socket_closed_event(event: lavaplay.WebSocketClosedEvent):
     logging.error(f"error with websocket {event.reason}")
 # -------------------------------- #
 

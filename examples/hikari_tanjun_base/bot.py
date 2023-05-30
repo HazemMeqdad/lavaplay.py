@@ -1,6 +1,6 @@
 import hikari
 import tanjun
-import lavaplayer
+import lavaplay
 import asyncio
 
 
@@ -8,7 +8,7 @@ TOKEN = "..."  # replace with your token
 
 bot = hikari.GatewayBot(TOKEN)
 client = tanjun.Client.from_gateway_bot(bot)
-lavalink = lavaplayer.Lavalink(
+lavalink = lavaplay.Lavalink(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
@@ -50,10 +50,10 @@ async def play(ctx: tanjun.abc.SlashContext, query: str):
     if not result:
         await ctx.respond("not found result for your query")
         return
-    elif isinstance(result, lavaplayer.TrackLoadFailed):
+    elif isinstance(result, lavaplay.TrackLoadFailed):
         await ctx.respond("Track load failed, try again later.\n```{}```".format(result.message))
         return
-    elif isinstance(result, lavaplayer.PlayList):
+    elif isinstance(result, lavaplay.PlayList):
         await lavalink.add_to_queue(ctx.guild_id, result.tracks, ctx.author.id)
         await ctx.respond(f"added {len(result.tracks)} tracks to queue")
         return 

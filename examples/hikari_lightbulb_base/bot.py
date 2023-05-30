@@ -1,6 +1,6 @@
 import lightbulb
 import hikari
-import lavaplayer
+import lavaplay
 import logging
 import os
 import asyncio
@@ -13,7 +13,7 @@ DEFAULT_ENABLED_GUILDS = [123]  # list of guilds that the bot will create slash 
 
 
 bot = lightbulb.BotApp(TOKEN, PREFIX, default_enabled_guilds=DEFAULT_ENABLED_GUILDS)
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplay.LavalinkClient(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
@@ -62,10 +62,10 @@ async def play_command(ctx: lightbulb.context.Context):
     if not result:
         await ctx.respond("not found result for your query")
         return
-    elif isinstance(result, lavaplayer.TrackLoadFailed):
+    elif isinstance(result, lavaplay.TrackLoadFailed):
         await ctx.respond("Track load failed, try again later.\n```{}```".format(result.message))
         return
-    elif isinstance(result, lavaplayer.PlayList):
+    elif isinstance(result, lavaplay.PlayList):
         await lavalink.add_to_queue(ctx.guild_id, result.tracks, ctx.author.id)
         await ctx.respond(f"added {len(result.tracks)} tracks to queue")
         return 
@@ -167,16 +167,16 @@ async def leave_command(ctx: lightbulb.context.Context):
     await ctx.respond("done leave the voice channel")
 # ------------------------------------- #
 
-@lavalink.listen(lavaplayer.TrackStartEvent)
-async def track_start_event(event: lavaplayer.TrackStartEvent):
+@lavalink.listen(lavaplay.TrackStartEvent)
+async def track_start_event(event: lavaplay.TrackStartEvent):
     logging.info(f"start track: {event.track.title}")
 
-@lavalink.listen(lavaplayer.TrackEndEvent)
-async def track_end_event(event: lavaplayer.TrackEndEvent):
+@lavalink.listen(lavaplay.TrackEndEvent)
+async def track_end_event(event: lavaplay.TrackEndEvent):
     logging.info(f"track end: {event.track.title}")
 
-@lavalink.listen(lavaplayer.WebSocketClosedEvent)
-async def web_socket_closed_event(event: lavaplayer.WebSocketClosedEvent):
+@lavalink.listen(lavaplay.WebSocketClosedEvent)
+async def web_socket_closed_event(event: lavaplay.WebSocketClosedEvent):
     logging.error(f"error with websocket {event.reason}")
 
 

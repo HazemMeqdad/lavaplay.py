@@ -5,4 +5,4 @@ ignore =
 
 per-file-ignores = 
     test.py: E302, E501, F811, F811, W292
-    lavaplayer/__init__.py: F401, F403, W292
+    lavaplay/__init__.py: F401, F403, W292

@@ -1,28 +1,65 @@
-from dataclasses import dataclass, field
-from lavaplayer.exceptions import FiltersError
+from dataclasses import dataclass
+from lavaplay.exceptions import FiltersError
 import typing as t
+from inspect import signature
 
+# https://stackoverflow.com/questions/55099243/python3-dataclass-with-kwargsasterisk
+class BaseObject:
+    @classmethod
+    def from_kwargs(cls, **kwargs):
+        # fetch the constructor's signature
+        cls_fields = {field for field in signature(cls).parameters}
 
+        # split the kwargs into native ones and new ones
+        native_args, new_args = {}, {}
+        for name, val in kwargs.items():
+            if name in cls_fields:
+                native_args[name] = val
+            else:
+                new_args[name] = val
+
+        # use the native ones to create the class ...
+        ret = cls(**native_args)
+
+        # ... and add the new ones by hand
+        for new_name, new_val in new_args.items():
+            setattr(ret, new_name, new_val)
+        return ret
 
 @dataclass
-class Info:
+class Memory(BaseObject):
+    free: int
+    used: int
+    allocated: int
+    reservable: int
+
+@dataclass
+class Cpu(BaseObject):
+    cores: int
+    systemLoad: float
+    lavalinkLoad: float
+
+@dataclass
+class FrameStats(BaseObject):
+    sent: int
+    nulled: int
+    deficit: int
+
+@dataclass
+class Stats(BaseObject):
     """
     Info websocket for connection
     """
-    playing_players: int
-    memory_reservable: int
-    memory_used: int
-    memory_free: int
-    memory_allocated: int
     players: int
-    cpu_cores: int
-    system_load: float
-    lavalink_load: float
+    playingPlayers: int
     uptime: int
+    memory: Memory
+    cpu: Cpu
+    frameStats: t.Optional[FrameStats] = None
 
 
 @dataclass(repr=True)
-class Track:
+class Track(BaseObject):
     """
     Info track object.
     """
@@ -45,23 +82,8 @@ class Track:
     def __repr__(self) -> str:
         return self.title
 
-
 @dataclass
-class Node:
-    """
-    The node is saved the queue guild list and volume and etc information.
-    """
-    guild_id: int
-    queue: t.List[Track]
-    volume: int
-    is_pause: bool = False
-    repeat: bool = False
-    queue_repeat: bool = False
-    is_connected: bool = False
-
-
-@dataclass
-class ConnectionInfo:
+class ConnectionInfo(BaseObject):
     """
     A info for Connection just use to save the connection information.
     """
@@ -71,88 +93,20 @@ class ConnectionInfo:
 
 
 @dataclass
-class PlayList:
+class PlayList(BaseObject):
     name: str
     selected_track: int
     tracks: t.List[Track]
 
-class Event:
-    """
-    The class is a base event for websocket.
-    """
-
 @dataclass
-class TrackStartEvent(Event):
-    """
-    Event on track start.
-    """
-    track: Track
-    guild_id: int
-
-
-@dataclass
-class TrackEndEvent(Event):
-    """
-    Event on track end.
-    """
-    track: Track
-    guild_id: int
-    reason: str
-
-
-@dataclass
-class TrackExceptionEvent(Event):
-    """
-    Event on track exception.
-    """
-    track: Track
-    guild_id: int
-    exception: str
-    message: t.Optional[str]
-    severity: t.Optional[str]
-    cause: t.Optional[str]
-
-
-@dataclass
-class TrackStuckEvent(Event):
-    """
-    Event on track stuck.
-    """
-    track: Track
-    guild_id: int
-    thresholdMs: str
-
-
-@dataclass
-class WebSocketClosedEvent(Event):
-    """
-    Event on websocket closed.
-    """
-    guild_id: int
-    code: int
-    reason: str
-    byRemote: bool
-
-
-@dataclass
-class PlayerUpdateEvent(Event):
+class PlayerState(BaseObject):
     """
     Event on player update.
     """
-    guild_id: int
     time: int
-    position: t.Optional[int]
-    connected: t.Optional[bool]
-
-
-@dataclass
-class ErrorEvent(Event):
-    """
-    Event on error.
-    """
-    guild_id: int
-    exception: Exception
-
+    connected: bool
+    ping: int
+    position: t.Optional[int] = None
 
 @dataclass(init=True)
 class Filters:

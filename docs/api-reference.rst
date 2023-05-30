@@ -12,7 +12,10 @@ Here you will find an index of all the API reference pages for lavaplayer's diff
    :maxdepth: 2
 
    api_references/client
-   api_references/objects
-   api_references/exceptions
-   api_references/api
    api_references/emitter
+   api_references/events
+   api_references/exceptions
+   api_references/node_manager
+   api_references/objects
+   api_references/objects
+   api_references/rest
