@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from lavaplayer.exceptions import FiltersError
+from lavaplay.exceptions import FiltersError
 import typing as t
 from inspect import signature
 

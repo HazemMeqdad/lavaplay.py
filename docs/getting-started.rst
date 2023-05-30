@@ -4,13 +4,13 @@
 Getting Started
 ===============
 
-The lavaplayer package is designed to be used with the lavalink server
+The lavaplay.py package is designed to be used with the lavalink server
 
-Lavaplayer can be installed using the following command:
+lavaplay.py can be installed using the following command:
 
-windows: ``pip install lavaplayer``
+windows: ``pip install lavaplay.py``
 
-MacOS/Linux: ``pip3 install lavaplayer``
+MacOS/Linux: ``pip3 install lavaplay.py``
 
 and need to install `java 11 <https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html>`_ * 
 LTS or newer required. and create a `application.yml <https://github.com/freyacodes/Lavalink/blob/master/LavalinkServer/application.yml.example>`_ file in the root of your project.
@@ -21,7 +21,7 @@ run the server use this command: ``java -jar Lavalink.jar``
 
 and install lasted `lavalink.jar <https://github.com/freyacodes/Lavalink/releases/download/3.4/Lavalink.jar>`_ version
 
-after installing, you can use the lavaplayer package in your code by importing it:
+after installing, you can use the lavaplay.py package in your code by importing it:
 
 ----
 
@@ -30,16 +30,16 @@ Create your custom music bot:
 
 Your first bot can be written in just a few lines of code:
 :: 
-    # importing the lavaplayer package
-    import lavaplayer
+    # importing the lavaplay.py package
+    import lavaplay
     # import a discord client like: hikari, discord.py, etc...
     import hikari
 
     # create a hikari client to get a events
     bot = hikari.GatewayBot("...")
 
-    # create a lavaplayer client
-    lavalink = lavaplayer.LavalinkClient(
+    # create a lavaplay client
+    lavalink = lavaplay.Lavalink(
         host="localhost",  # your lavalink host
         port=2333,  # your lavalink port
         password="youshallnotpass",  # your lavalink password
@@ -49,7 +49,7 @@ Your first bot can be written in just a few lines of code:
     # the started event is called when the client is ready
     @bot.listen(hikari.StartedEvent)
     async def started_event(event):
-        # connect the lavaplayer client to the hikari client
+        # connect the lavaplay client to the hikari client
         await lavalink.connect()
 
     # the message event is called when a message is sent
@@ -104,7 +104,7 @@ Your first bot can be written in just a few lines of code:
             event: hikari.VoiceServerUpdateEvent = await bot.wait_for(hikari.VoiceServerUpdateEvent, timeout=30)
         except :
             return
-        # Update the lavaplayer client with the new voice server
+        # Update the lavaplay client with the new voice server
         await lavalink.voice_update(v.guild_id, v.state.session_id, event.token, event.raw_endpoint)
 
 
@@ -117,5 +117,5 @@ When you run the bot, you can use the following commands to play music:
 
 !play <query> - Play a song
 
-you can create other commands to control the music player. this is some other `examples <https://github.com/HazemMeqdad/lavaplayer/tree/main/examples>`_
+you can create other commands to control the music player. this is some other `examples <https://github.com/HazemMeqdad/lavaplay.py/tree/main/examples>`_
 

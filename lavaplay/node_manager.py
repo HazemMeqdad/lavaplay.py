@@ -1,6 +1,6 @@
 import asyncio
 import typing as t
-from lavaplayer.exceptions import TrackLoadFailed
+from lavaplay.exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi

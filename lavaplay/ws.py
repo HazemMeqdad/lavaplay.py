@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 import logging
-from lavaplayer.utlits import generate_resume_key
+from lavaplay.utlits import generate_resume_key
 from .objects import *
 from .events import *
 from .emitter import Emitter

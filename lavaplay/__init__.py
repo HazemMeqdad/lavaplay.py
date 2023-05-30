@@ -5,10 +5,10 @@ Lavalink connecter
 :license: MIT, see LICENSE for more details.
 """
 
-__title__ = "lavaplayer"
+__title__ = "lavaplay.py"
 __author__ = "HazemMeqdad"
 __license__ = "MIT"
-__version__ = "1.0.9a"
+__version__ = "1.0.11a"
 
 from .client import Lavalink
 from .objects import *

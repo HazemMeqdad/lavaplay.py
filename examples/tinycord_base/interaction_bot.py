@@ -1,5 +1,5 @@
 import tinycord
-import lavaplayer
+import lavaplay
 import datetime
 
 TOKEN = ""
@@ -7,7 +7,7 @@ client = tinycord.interactions.ApplicationCommandClient(
     token=TOKEN,
     intents=tinycord.Intents.all()
 )
-lavalink = lavaplayer.LavalinkClient(
+lavalink = lavaplay.LavalinkClient(
     host="127.0.0.1",
     port=8888,
     password="password",
@@ -109,7 +109,7 @@ async def play(ctx: "tinycord.Interaction") -> None:
             content="No results found"
         ))
 
-    if isinstance(result, lavaplayer.PlayList):
+    if isinstance(result, lavaplay.PlayList):
         await lavalink.add_to_queue(ctx.guild_id, result.tracks, ctx.user.id)
         # Play a playlist
 

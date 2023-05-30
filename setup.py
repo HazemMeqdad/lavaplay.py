@@ -7,14 +7,14 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 
 setup(
-    name='lavaplayer',
-    version='1.0.10a',
+    name='lavaplay.py',
+    version='1.0.11a',
     description='Its a lavalink nodes manger to make a music bots for discord with python.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/HazemMeqdad/lavaplayer',
+    url='https://github.com/HazemMeqdad/lavaplay.py',
     author='HazemMeqdad',
-    author_email='hazemmeqdad@gmail.com',
+    author_email='hazemmeqdad@outlook.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -24,14 +24,15 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         'Programming Language :: Python :: 3 :: Only',
     ],
-    keywords='lavalink, discord, discord-lavalink, lavaplayer',
-    packages=["lavaplayer"],
+    keywords='lavalink, discord, discord-lavalink, lavaplay, lavaplay.py',
+    packages=["lavaplay"],
     install_requires=["aiohttp"],
     project_urls={
-        'Bug Reports': 'https://github.com/HazemMeqdad/lavaplayer/issues',
-        'Source': 'https://github.com/HazemMeqdad/lavaplayer/',
-        'Documentation': 'https://lavaplayer.readthedocs.io/en/latest'
+        'Bug Reports': 'https://github.com/HazemMeqdad/lavaplay.py/issues',
+        'Source': 'https://github.com/HazemMeqdad/lavaplay.py/',
+        'Documentation': 'https://lavaplay.readthedocs.io/en/latest'
     },
 )

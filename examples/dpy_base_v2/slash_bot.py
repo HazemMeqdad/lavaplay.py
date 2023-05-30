@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 import logging
 import time
-import lavaplayer
+import lavaplay
 import json
 
 
@@ -23,7 +23,7 @@ class MyClient(discord.Client):
 
 
 bot = MyClient(intents=discord.Intents.all())
-lavalink = lavaplayer.Lavalink(
+lavalink = lavaplay.Lavalink(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavlink password
@@ -93,10 +93,10 @@ async def play(interaction: discord.Interaction, *, query: str):
     tracks = await lavalink.auto_search_tracks(query)
     if not tracks:
         return await interaction.response.send_message("No results found.")
-    elif isinstance(tracks, lavaplayer.TrackLoadFailed):
+    elif isinstance(tracks, lavaplay.TrackLoadFailed):
         await interaction.response.send_message("Error loading track, Try again later.\n```%s```" % tracks.message)
         return
-    elif isinstance(tracks, lavaplayer.PlayList):
+    elif isinstance(tracks, lavaplay.PlayList):
         await interaction.response.send_message(
             "Playlist found, Adding to queue, Please wait..."
         )
@@ -168,7 +168,7 @@ async def repeat(interaction: discord.Interaction, repeat: bool, queue: bool = F
 
 @bot.tree.command(name="filter", description="Filter the queue")
 async def _filter(interaction: discord.Interaction):
-    filters = lavaplayer.Filters()
+    filters = lavaplay.Filters()
     filters.rotation(0.2)
     await lavalink.filters(interaction.guild.id, filters)
     await interaction.response.send_message("Filter applied.")

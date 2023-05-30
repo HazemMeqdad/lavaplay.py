@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import json
-import lavaplayer
+import lavaplay
 import logging
 
 PREFIX = ","  # Change this to your prefix
@@ -10,7 +10,7 @@ TOKEN = "..."  # Change this to your token
 LOG = logging.getLogger("discord.bot")
 
 bot = commands.Bot(commands.when_mentioned_or(PREFIX), enable_debug_events=True, intents=discord.Intents.all())
-lavalink = lavaplayer.Lavalink(
+lavalink = lavaplay.Lavalink(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass"  # Lavlink password
@@ -53,10 +53,10 @@ async def play(ctx: commands.Context, *, query: str):
 
     if not tracks:
         return await ctx.send("No results found.")
-    elif isinstance(tracks, lavaplayer.TrackLoadFailed):
+    elif isinstance(tracks, lavaplay.TrackLoadFailed):
         await ctx.send("Track load failed. Try again.\n```" + tracks.message + "```")
     # Playlist
-    elif isinstance(tracks, lavaplayer.PlayList):
+    elif isinstance(tracks, lavaplay.PlayList):
         msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
         await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
         await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
@@ -124,7 +124,7 @@ async def repeat(ctx: commands.Context, status: bool):
 	
 @bot.command(name="filter", help="Get the current song")
 async def filter_command(ctx: commands.Context):
-    filters = lavaplayer.Filters()
+    filters = lavaplay.Filters()
     filters.rotation(0.2)
     filters.equalizer([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
     await lavalink.filters(ctx.guild.id, filters)

@@ -1,12 +1,12 @@
 import json
 from discord.ext import commands
-import lavaplayer
+import lavaplay
 
 PREFIX = ","
 TOKEN = "..."
 
 bot = commands.Bot(PREFIX, enable_debug_events=True)
-lavalink = lavaplayer.Lavalink(
+lavalink = lavaplay.Lavalink(
     host="localhost",  # Lavalink host
     port=2333,  # Lavalink port
     password="youshallnotpass",  # Lavalink password
@@ -44,10 +44,10 @@ async def play(ctx: commands.Context, *, query: str):
     if not tracks:
         await ctx.send("No results found.")
         return
-    elif isinstance(tracks, lavaplayer.TrackLoadFailed):
+    elif isinstance(tracks, lavaplay.TrackLoadFailed):
         await ctx.send("Track load failed. Try again.\n```" + tracks.message + "```")
         return
-    elif isinstance(tracks, lavaplayer.PlayList):
+    elif isinstance(tracks, lavaplay.PlayList):
         msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
         await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
         await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
@@ -116,7 +116,7 @@ async def repeat(ctx: commands.Context):
     
 @bot.command(aliases=['filter'])
 async def _filter(ctx: commands.Context):
-    filters = lavaplayer.Filters()
+    filters = lavaplay.Filters()
     filters.rotation(0.2)
     await lavalink.filters(ctx.guild.id, filters)
     await ctx.send("Filter applied.")

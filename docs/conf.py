@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath(os.path.join("..")))
 
 # -- Project information -----------------------------------------------------
 
-project = 'lavaplayer'
-copyright = '2022, HazemMeqdad'
+project = 'lavaplay'
+copyright = '2023, HazemMeqdad'
 author = 'HazemMeqdad'
 
 
@@ -29,7 +29,7 @@ author = 'HazemMeqdad'
 # ones.
 autodoc_member_order = 'bysource'
 
-version = '1.0.4a'
+version = '1.0.11a'
 
 extensions = [
     "sphinx.ext.autodoc",
