@@ -38,13 +38,13 @@ class WS:
         self._headers = {
             "Authorization": password,
             "User-Id": str(user_id),
-            "Client-Name": f"Lavaplayer-py/{__version__}",
+            "Client-Name": f"Lavaplay.py/{__version__}",
             "Num-Shards": str(shards_count)
         }
         self._loop = loop or node.loop
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
-        self.resume_key = resume_key or self.node.resume_key or generate_resume_key()
+        self.resume_key = resume_key or self.node._resume_key or generate_resume_key()
         self._session_id: str = None
     
     @property
