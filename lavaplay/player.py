@@ -23,10 +23,11 @@ class Player:
         self._filters: Filters = Filters()
         self.queue: t.List[Track] = []
         self.loop: asyncio.AbstractEventLoop = node.loop
+
         self._repeat = False
         self._queue_repeat = False
         self._is_connected = False
-    
+        self._ping = 0
 
     def add_to_queue(self, tracks: t.List[Track], requester: t.Optional[int] = None) -> None:
         """
@@ -289,7 +290,8 @@ class Player:
                 }
             }
         )
-        self._is_connected = True
+        self._is_connected = res["connected"]
+        self._ping = res["ping"]
 
     async def raw_voice_state_update(self, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """
@@ -333,3 +335,17 @@ class Player:
         Return if the player is connected to voice channel.
         """
         return self._is_connected
+
+    @property
+    def ping(self) -> int:
+        """
+        Return the ping of the player.
+        """
+        return self._ping
+    
+    @property
+    def is_playing(self) -> bool:
+        """
+        Return if the player is playing.
+        """
+        return len(self.queue) > 0
