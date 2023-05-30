@@ -32,7 +32,7 @@ class WS:
         self.ws = None
         self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}"
         if v4 is False:
-            self.ws_url += "/v3/websocket"
+            self.ws_url += "/v4/websocket"
         self.client = client
         self._headers = {
             "Authorization": password,
@@ -73,12 +73,12 @@ class WS:
                     _LOGGER.warning("Please check your websocket port - closing websocket")
             self.is_connect = True
 
-            self.resume_key = generate_resume_key()
-            await self.send({
-                "op": "configureResuming",
-                "key": self.resume_key,
-                "timeout": 60
-            })
+            # self.resume_key = generate_resume_key()
+            # await self.send({
+            #     "op": "configureResuming",
+            #     "key": self.resume_key,
+            #     "timeout": 60
+            # })
 
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:

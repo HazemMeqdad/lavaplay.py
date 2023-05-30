@@ -318,20 +318,22 @@ class Lavalink:
             If guild not found in nodes cache.
         """
         node = await self.get_guild_node(guild_id)
-        if not node:
-            raise NodeError("Node not found", guild_id)
-        if len(node.queue) == 0 or start == True:
-            await self.rest.update_player(
-                session_id=self._ws.session_id, 
-                guild_id=guild_id,
-                noReplace=not start,
-                data={
-                    "encodedTrack": track.track
-                }
-            )
-        track.requester = requester
-        node.queue.append(track)
-        await self.set_guild_node(guild_id, node)
+        # if not node:
+        #     raise NodeError("Node not found", guild_id)
+        # if len(node.queue) == 0 or start == True:
+        await self.rest.update_player(
+            session_id=self._ws.session_id, 
+            guild_id=guild_id,
+            noReplace=not start,
+            data={
+                "encodedTrack": track.track,
+                "position": 0, 
+                "volume": 50
+            }
+        )
+        # track.requester = requester
+        # node.queue.append(track)
+        # await self.set_guild_node(guild_id, node)
 
     async def queue(self, guild_id: int, /) -> t.List[Track]:
         """
