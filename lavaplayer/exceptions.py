@@ -1,3 +1,4 @@
+
 class NodeError(Exception):
     """
     A error for node.

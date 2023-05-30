@@ -10,11 +10,12 @@ __author__ = "HazemMeqdad"
 __license__ = "MIT"
 __version__ = "1.0.9a"
 
-from .client import LavalinkClient, Lavalink
+from .client import Lavalink
 from .objects import *
 from .events import *
-from .api import RestApi
+from .rest import RestApi
 from .exceptions import (
     NodeError, FiltersError, VolumeError,
     NotConnectedError, ConnectedError, TrackLoadFailed
 )
+from .node_manager import Node

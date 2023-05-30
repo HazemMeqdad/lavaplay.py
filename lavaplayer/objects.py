@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from lavaplayer.exceptions import FiltersError
 import typing as t
 from inspect import signature
@@ -81,20 +81,6 @@ class Track(BaseObject):
 
     def __repr__(self) -> str:
         return self.title
-
-@dataclass
-class Node(BaseObject):
-    """
-    The node is saved the queue guild list and volume and etc information.
-    """
-    guild_id: int
-    queue: t.List[Track]
-    volume: int
-    is_pause: bool = False
-    repeat: bool = False
-    queue_repeat: bool = False
-    is_connected: bool = False
-
 
 @dataclass
 class ConnectionInfo(BaseObject):

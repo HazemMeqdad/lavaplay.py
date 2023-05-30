@@ -1,12 +1,9 @@
 import aiohttp
 from . import routes
 import logging
-from .objects import Track
 
+_LOG = logging.getLogger("lavaplayer.rest")
 
-_LOGGER = logging.getLogger(__name__)
-
-# TODO: add docstring
 class RestApi:
     """
     The class make a request to the rest api for lavalink.
@@ -49,7 +46,7 @@ class RestApi:
         """
         async with aiohttp.ClientSession() as session:
             async with session.request(method, self.rest_uri + rout, headers=self.headers, json=data) as response:
-                _LOGGER.debug(f"{method} {self.rest_uri + rout}")
+                _LOG.debug(f"{method} {self.rest_uri + rout}")
                 return await response.json()
     
     async def load_tracks(self, identifier: str) -> dict:
