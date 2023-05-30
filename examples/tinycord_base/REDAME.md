@@ -1,1 +1,0 @@
-Tinycord project is missing.
