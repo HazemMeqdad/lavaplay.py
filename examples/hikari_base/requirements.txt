@@ -1,2 +1,2 @@
-hikari==2.0.0.dev109
+hikari==2.0.0.dev119
 uvloop>=0.16; sys_platform != 'win32'
