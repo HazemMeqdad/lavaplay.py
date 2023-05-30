@@ -248,7 +248,7 @@ class Node:
         """
         Check if the client is connect to the voice server.
         """
-        return self._ws.is_connect
+        return 
 
     async def connect(self):
         """

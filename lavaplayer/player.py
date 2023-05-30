@@ -27,8 +27,8 @@ class Player:
         """
         Add tracks to queue. use to load a playlist result.
 
-        >>> playlist = await lavaplayer.search_youtube("playlist url")
-        >>> await lavaplayer.add_to_queue(guild_id, playlist.tracks)
+        >>> playlist = lavaplayer.search_youtube("playlist url")
+        >>> lavaplayer.add_to_queue(playlist.tracks)
 
         Parameters
         ---------
@@ -215,6 +215,8 @@ class Player:
 
         Parameters
         ---------
+        state: :class:`bool`
+            the stats for shuffle track
         """        
         if not self.queue:
             return []
@@ -317,7 +319,7 @@ class Player:
         connection_info = self._voice_handlers.get(self.guild_id)
         if not connection_info:
             return
-        await self.voice_update(self.node.session_id, token, endpoint, connection_info.channel_id)
+        await self.voice_update(connection_info.session_id, token, endpoint, connection_info.channel_id)
 
     async def wait_for_connection(self) -> t.Optional["Node"]:
         """
