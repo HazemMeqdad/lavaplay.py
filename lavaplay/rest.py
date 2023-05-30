@@ -201,7 +201,7 @@ class RestApi:
         res = await self.request("GET", routes.GET_PLAYER.format(sessionId=session_id, guildId=guild_id))
         return res
     
-    async def update_player(self, session_id: str, guild_id: int, noReplace: bool = True, data: dict = {}) -> dict:
+    async def update_player(self, session_id: str, guild_id: int, noReplace: bool = False, data: dict = {}) -> dict:
         """
         This function makes a request to the rest api for lavalink
 
@@ -219,7 +219,7 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
-        res = await self.request("PATCH", routes.UPDATE_PLAYER.format(sessionId=session_id, guildId=guild_id), data=data)
+        res = await self.request("PATCH", routes.UPDATE_PLAYER.format(sessionId=session_id, guildId=guild_id, noReplace="true" if noReplace else "false"), data=data)
         return res
     
     async def destroy_player(self, session_id: str, guild_id: int) -> None:

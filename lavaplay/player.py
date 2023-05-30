@@ -44,7 +44,7 @@ class Player:
         for track in tracks:
             self.loop.create_task(self.play(self.guild_id, track, requester))
 
-    async def play(self, track: Track, requester: t.Optional[int] = None, start: int = 0) -> None:
+    async def play(self, track: Track, requester: t.Optional[int] = None, start: bool = False) -> None:
         """
         Play track or add to the queue list.
 
@@ -55,14 +55,12 @@ class Player:
         start: :class:`bool`
             force play queue is ignored
         """
-        if len(self.queue) == 0:
+        if len(self.queue) == 0 or start:
             await self.rest.update_player(
                 session_id=self.node.session_id, 
                 guild_id=self.guild_id,
                 data={
                     "encodedTrack": track.track,
-                    "position": 0 or start, 
-                    "volume": 50
                 }
             )
         track.requester = requester
@@ -290,8 +288,8 @@ class Player:
                 }
             }
         )
-        self._is_connected = res["connected"]
-        self._ping = res["ping"]
+        self._is_connected = res["voice"]["connected"]
+        self._ping = res["voice"]["ping"]
 
     async def raw_voice_state_update(self, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """

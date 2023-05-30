@@ -75,14 +75,6 @@ class WS:
                     _LOG.warning("Please check your websocket port - closing websocket")
             self.is_connect = True
 
-            await self.node.rest.update_session(
-                self._session_id,
-                data={
-                    "resumingKey": self.resume_key,
-                    "timeout": self.node.timeout
-                }
-            )
-
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     self._loop.create_task(self.callback(msg.json()))
@@ -107,6 +99,13 @@ class WS:
             _LOG.info("Lavalink client is ready")
             self._session_id = payload["sessionId"]
             self.node.session_id = self._session_id
+            await self.node.rest.update_session(
+                self._session_id,
+                data={
+                    "resumingKey": self.resume_key,
+                    "timeout": self.node._resume_timeout or 180
+                }
+            )
             if payload["resumed"] is True:
                 _LOG.info("Lavalink client resumed session successfully")
             self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
@@ -172,7 +171,7 @@ class WS:
             if player._repeat:
                 await player.play(track, player.queue[0].requester, True)
                 return
-            del player.queue[0]
+            player.queue.pop(0)
             if len(player.queue) != 0:
                 await player.play(player.queue[0], player.queue[0].requester, True)
 

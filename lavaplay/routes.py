@@ -1,7 +1,7 @@
 
 GET_PLAYERS = "/v3/sessions/{sessionId}/players"  # GET
 GET_PLAYER = "/v3/sessions/{sessionId}/players/{guildId}"  # GET
-UPDATE_PLAYER = "/v3/sessions/{sessionId}/players/{guildId}"  # PATCH
+UPDATE_PLAYER = "/v3/sessions/{sessionId}/players/{guildId}?noReplace={noReplace}"  # PATCH
 """Whether to replace the current track with the new track. Defaults to `false`"""
 DESTROY_PLAYER = "/v3/sessions/{sessionId}/players/{guildId}"  # DELETE
 UPDATE_SESSION = "/v3/sessions/{sessionId}"  # PATCH
