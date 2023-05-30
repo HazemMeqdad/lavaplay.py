@@ -248,7 +248,7 @@ class Node:
         """
         Check if the client is connect to the voice server.
         """
-        return 
+        return self._ws.is_connect if self._ws else False
 
     async def connect(self):
         """
@@ -270,4 +270,3 @@ class Node:
         Disconnect from the lavalink websocket
         """
         await self._ws.ws.close()
-

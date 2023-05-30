@@ -60,8 +60,8 @@ class Emitter:
         data: :class:`function`
             the data is revers to function callback
         """
-        event = event if isinstance(event, str) else event.__name__
-        events = [i for i in self.listeners if i["event"] == event]
+        event_name = event if isinstance(event, str) else event.__name__
+        events = [i for i in self.listeners if i["event"] == event_name]
         for event in events:
             _LOGGER.debug(f"dispatch {event} for {len(events)} listeners")
             if asyncio.iscoroutinefunction(event["func"]):

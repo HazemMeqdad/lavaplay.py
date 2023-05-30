@@ -14,4 +14,3 @@ VERSION = "/version"  # GET
 ROUTEPLANNER = "/v3/routeplanner/status"  # GET
 UNMARK_FAILED_ADDRESS = "/v3/routeplanner/free/address"  # POST
 UNMARK_ALL_FAILED_ADDRESS = "/v3/routeplanner/free/all"  # POST
-

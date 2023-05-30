@@ -253,5 +253,3 @@ class RestApi:
         """
         res = await self.request("PATCH", routes.UPDATE_SESSION.format(sessionId=session_id), data=data)
         return res
-         
-

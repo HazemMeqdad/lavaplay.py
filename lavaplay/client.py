@@ -13,7 +13,7 @@ class Lavalink:
     def __init__(self) -> None:
         self._nodes: t.List[Node] = []
 
-    def create_node(self, host: str, port: int, password: str, user_id: int, *, name: str = None,shard_count: int = None, resume_key: str = None, resume_timeout: int = None, loop: t.Optional[asyncio.AbstractEventLoop] = None) -> Node:
+    def create_node(self, host: str, port: int, password: str, user_id: int, *, name: str = None, shard_count: int = None, resume_key: str = None, resume_timeout: int = None, loop: t.Optional[asyncio.AbstractEventLoop] = None) -> Node:
         """
         Create a node for lavalink.
 
@@ -66,5 +66,3 @@ class Lavalink:
         The default node.
         """
         return self._nodes[0]
-
-    

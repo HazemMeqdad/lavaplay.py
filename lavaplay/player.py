@@ -21,6 +21,7 @@ class Player:
         self.loop: asyncio.AbstractEventLoop = node.loop
         self._repeat = False
         self._queue_repeat = False
+        self._is_connected = False
     
 
     def add_to_queue(self, tracks: t.List[Track], requester: t.Optional[int] = None) -> None:
@@ -271,9 +272,9 @@ class Player:
             channel id for connection, if not give channel_id the connection will be closed
         """
         if not channel_id:
-            await self.destroy(self.guild_id)
+            await self.destroy()
             return
-        await self.rest.update_player(
+        res = await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
             data={
@@ -284,6 +285,7 @@ class Player:
                 }
             }
         )
+        self._is_connected = True
 
     async def raw_voice_state_update(self, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """
@@ -301,7 +303,7 @@ class Player:
         if user_id != self.user_id:
             return
         elif not channel_id:
-            await self.destroy(self.guild_id)
+            await self.destroy()
             return
         self._voice_handlers[self.guild_id] = ConnectionInfo(self.guild_id, session_id, channel_id)
 
@@ -321,25 +323,9 @@ class Player:
             return
         await self.voice_update(connection_info.session_id, token, endpoint, connection_info.channel_id)
 
-    async def wait_for_connection(self) -> t.Optional["Node"]:
+    @property
+    def is_connected(self) -> bool:
         """
-        Wait for the voice connection to be established.
-
-        Parameters
-        ---------
+        Return if the player is connected to voice channel.
         """
-        
-
-    async def wait_for_remove_connection(self) -> None:
-        """
-        Wait for the voice connection to be removed.
-
-        Parameters
-        ---------
-
-        Raises
-        --------
-        :exc:`.NodeError`
-            If guild not found in nodes cache.
-        """        
-        
+        return self._is_connected

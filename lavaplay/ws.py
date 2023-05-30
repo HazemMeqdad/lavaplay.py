@@ -2,8 +2,15 @@ import asyncio
 import aiohttp
 import logging
 from lavaplay.utlits import generate_resume_key
-from .objects import *
-from .events import *
+from .objects import (
+    Stats, Cpu, Memory, FrameStats
+)
+from .events import (
+    TrackEndEvent, TrackExceptionEvent, TrackStuckEvent, 
+    TrackStartEvent, ReadyEvent, PlayerState, 
+    PlayerUpdateEvent, StatsUpdateEvent, TrackException,
+    WebSocketClosedEvent
+)
 from .emitter import Emitter
 import typing as t
 from . import __version__

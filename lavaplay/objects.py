@@ -4,7 +4,7 @@ import typing as t
 from inspect import signature
 
 # https://stackoverflow.com/questions/55099243/python3-dataclass-with-kwargsasterisk
-class BaseObject(object):
+class BaseObject:
     @classmethod
     def from_kwargs(cls, **kwargs):
         # fetch the constructor's signature
