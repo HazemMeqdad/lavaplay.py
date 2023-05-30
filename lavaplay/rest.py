@@ -47,6 +47,8 @@ class RestApi:
         async with aiohttp.ClientSession() as session:
             async with session.request(method, self.rest_uri + rout, headers=self.headers, json=data) as response:
                 _LOG.debug(f"{method} {self.rest_uri + rout}")
+                if method == "DELETE":
+                    return
                 return await response.json()
     
     async def load_tracks(self, identifier: str) -> dict:
