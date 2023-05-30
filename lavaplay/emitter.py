@@ -4,7 +4,7 @@ from collections import deque
 import logging
 from .events import Event
 
-_LOGGER = logging.getLogger("lavaplayer.event_manger")
+_LOG = logging.getLogger("lavaplay.emitter")
 
 class Emitter:
     """
@@ -30,7 +30,7 @@ class Emitter:
         func: :class:`function`
             the function to callback event
         """
-        _LOGGER.debug(f"add listener {event}")
+        _LOG.debug(f"add listener {event}")
         event = event if isinstance(event, str) else event.__name__
         self.listeners.append({"event": event, "func": func})
 
@@ -45,7 +45,7 @@ class Emitter:
         func: :class:`function`
             the function to callback event
         """
-        _LOGGER.debug(f"remove listener {event}")
+        _LOG.debug(f"remove listener {event}")
         event = event if isinstance(event, str) else event.__name__
         self.listeners.remove([i for i in self.listeners if i["event"] == event and i["func"] == func])
 
@@ -63,8 +63,8 @@ class Emitter:
         event_name = event if isinstance(event, str) else event.__name__
         events = [i for i in self.listeners if i["event"] == event_name]
         for event in events:
-            _LOGGER.debug(f"dispatch {event} for {len(events)} listeners")
+            _LOG.debug(f"dispatch {event} for {len(events)} listeners")
             if asyncio.iscoroutinefunction(event["func"]):
                 self._loop.create_task(event["func"](data))
             else:
-                _LOGGER.error("Events only async function")
+                _LOG.error("Events only async function")

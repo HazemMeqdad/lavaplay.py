@@ -3,7 +3,7 @@ import logging
 from .node_manager import Node
 import asyncio
 
-_LOG = logging.getLogger("lavaplayer.client")
+_LOG = logging.getLogger("lavaplay.client")
 
 class Lavalink:
     """

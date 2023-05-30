@@ -2,7 +2,7 @@ import aiohttp
 from . import routes
 import logging
 
-_LOG = logging.getLogger("lavaplayer.rest")
+_LOG = logging.getLogger("lavaplay.rest")
 
 class RestApi:
     """

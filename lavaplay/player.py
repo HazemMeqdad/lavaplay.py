@@ -3,8 +3,12 @@ import asyncio
 from .objects import Track, Filters, ConnectionInfo
 from .exceptions import VolumeError
 import random
+import logging
 if t.TYPE_CHECKING:
     from .node_manager import Node
+
+_LOG = logging.getLogger("lavaplay.player")
+
 
 class Player:
     def __init__(self, node: "Node", guild_id: int) -> None:

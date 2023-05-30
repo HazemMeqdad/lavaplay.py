@@ -17,7 +17,7 @@ from . import __version__
 if t.TYPE_CHECKING:
     from .node_manager import Node
 
-_LOG = logging.getLogger("lavaplayer.ws")
+_LOG = logging.getLogger("lavaplay.ws")
 
 class WS:
     def __init__(

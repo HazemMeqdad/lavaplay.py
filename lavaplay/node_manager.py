@@ -11,7 +11,7 @@ from .utlits import get_event_loop, prossing_tracks
 import logging
 from .player import Player
 
-_LOG = logging.getLogger("lavaplayer.node")
+_LOG = logging.getLogger("lavaplay.node")
 
 class Node:
     """
