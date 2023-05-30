@@ -56,6 +56,8 @@ class Node:
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
         self._ws: t.Optional[WS] = None
+        self._resume_key = resume_key
+        self._resume_timeout = resume_timeout
 
         # Unique identifier for the client.
         self.rest = RestApi(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)

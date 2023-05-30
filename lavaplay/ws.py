@@ -44,7 +44,7 @@ class WS:
         self._loop = loop or node.loop
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
-        self.resume_key = resume_key
+        self.resume_key = resume_key or self.node.resume_key or generate_resume_key()
         self._session_id: str = None
     
     @property
@@ -75,12 +75,13 @@ class WS:
                     _LOG.warning("Please check your websocket port - closing websocket")
             self.is_connect = True
 
-            # self.resume_key = generate_resume_key()
-            # await self.send({
-            #     "op": "configureResuming",
-            #     "key": self.resume_key,
-            #     "timeout": 60
-            # })
+            await self.node.rest.update_session(
+                self._session_id,
+                data={
+                    "resumingKey": self.resume_key,
+                    "timeout": self.node.timeout
+                }
+            )
 
             async for msg in self.ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
@@ -106,6 +107,8 @@ class WS:
             _LOG.info("Lavalink client is ready")
             self._session_id = payload["sessionId"]
             self.node.session_id = self._session_id
+            if payload["resumed"] is True:
+                _LOG.info("Lavalink client resumed session successfully")
             self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
         
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
