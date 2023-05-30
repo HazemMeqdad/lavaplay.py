@@ -1,1 +1,1 @@
-https://github.com/Rapptz/discord.py.git
+discord.py==2.2.3

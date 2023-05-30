@@ -1,163 +1,227 @@
 import discord
-from discord.ext import commands
-import json
-import lavaplay
+from discord import app_commands
 import logging
+import time
+import lavaplay
+import json
+import os
 
-PREFIX = ","  # Change this to your prefix
-TOKEN = "..."  # Change this to your token
+DEFAULT_GUILD_ENABLE = discord.Object(id=int(os.environ["GUILD_ID"]))  # ur guild id
+TOKEN = os.environ["TOKEN"]  # ur token
 
 LOG = logging.getLogger("discord.bot")
 
-bot = commands.Bot(commands.when_mentioned_or(PREFIX), enable_debug_events=True, intents=discord.Intents.all())
-lavalink = lavaplay.Lavalink(
-    host="localhost",  # Lavalink host
-    port=2333,  # Lavalink port
-    password="youshallnotpass"  # Lavlink password
-)
-bot.remove_command("help")
 
-@bot.event
-async def close():
-	for guild in bot.guilds:
-		await guild.change_voice_state(channel=None)
+class MyClient(discord.Client):
+    def __init__(self, *, intents: discord.Intents):
+        super().__init__(intents=intents, enable_debug_events=True)
+        self.tree = app_commands.CommandTree(self)
+        self.lavalink: lavaplay.Node = None
+
+    async def setup_hook(self):
+        self.tree.copy_global_to(guild=DEFAULT_GUILD_ENABLE)
+        await self.tree.sync(guild=DEFAULT_GUILD_ENABLE)
+        lava = lavaplay.Lavalink()
+        self.lavalink: lavaplay.Node = lava.create_node(
+            host="localhost",  # Lavalink host
+            port=2333,  # Lavalink port
+            password="youshallnotpass",  # Lavlink password
+            user_id=self.user.id,  # Your bot user id
+        )
+        self.lavalink.connect()
+        self.lavalink.event_manager.add_listener(lavaplay.ReadyEvent, self.on_lava_ready)
+
+    async def on_lava_ready(self, event: lavaplay.ReadyEvent):
+        LOG.info(event)
+        LOG.info("Lavalink is connected successfully!")
+
+
+bot = MyClient(intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
-    lavalink.set_user_id(bot.user.id)
-    lavalink.set_event_loop(bot.loop)
-    lavalink.connect()
     LOG.info("Logged in as %s", bot.user.name)
 
-@bot.command(name="help", aliases=["commands"], help="Shows all commands.")
-async def help_commmand(ctx: commands.Context):
-    embed = discord.Embed(title="Help", description="This is a help command", color=0x00ff00)
-    embed.description = "\n".join(f"`{PREFIX}{command.name}`: {command.help}" for command in bot.commands)
-    await ctx.send(embed=embed)
+@bot.tree.command(name="ping", description="Get the latency of the bot")
+async def ping(interaction: discord.Interaction):
+    start = time.time()
+    await interaction.response.send_message("Pong!")
+    await interaction.edit_original_message(
+        content="Gateway: `%dms`\nLatency: `%dms`"
+        % (round(bot.latency * 1000), round((time.time() - start) * 1000))
+    )
 
-@bot.command(help="Join the voice channel")
-async def join(ctx: commands.Context):
-	await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_deaf=True, self_mute=False)
-	await lavalink.wait_for_connection(ctx.guild.id)
-	await ctx.send("Joined the voice channel.")
+@bot.tree.command(name="help", description="Get the help of the bot")
+async def help(interaction: discord.Interaction):
+    commands = bot.tree.get_commands(guild=interaction.guild)
+    embed = discord.Embed(title="Help", description="", color=interaction.user.color or discord.Color.random())
+    embed.description = "\n".join(f"`/{command.name}`: {command.description}" for command in commands)
+    await interaction.response.send_message(embed=embed)
 
-@bot.command(help="Leave the voice channel")
-async def leave(ctx: commands.Context):
-	await ctx.guild.change_voice_state(channel=None)
-	await lavalink.wait_for_remove_connection(ctx.guild.id)
-	await ctx.send("Left the voice channel.")
-
-@bot.command(help="Play a song")
-async def play(ctx: commands.Context, *, query: str):
-    tracks = await lavalink.auto_search_tracks(query)
-
-    if not tracks:
-        return await ctx.send("No results found.")
-    elif isinstance(tracks, lavaplay.TrackLoadFailed):
-        await ctx.send("Track load failed. Try again.\n```" + tracks.message + "```")
-    # Playlist
-    elif isinstance(tracks, lavaplay.PlayList):
-        msg = await ctx.send("Playlist found, Adding to queue, Please wait...")
-        await lavalink.add_to_queue(ctx.guild.id, tracks.tracks, ctx.author.id)
-        await msg.edit(content="Added to queue, tracks: {}, name: {}".format(len(tracks.tracks), tracks.name))
+@bot.tree.command(name="join", description="Join a voice channel")
+async def join(interaction: discord.Interaction):
+    if not interaction.user.voice:
+        await interaction.response.send_message("You are not in a voice channel!")
         return
-    await lavalink.play(ctx.guild.id, tracks[0], ctx.author.id)
-    await ctx.send(f"Now playing: {tracks[0].title}")
+    await interaction.guild.change_voice_state(
+        channel=interaction.user.voice.channel, self_deaf=True, self_mute=False
+    )
+    player = bot.lavalink.create_player(interaction.guild_id)
+    await interaction.response.send_message("Joined the voice channel.")
 
-@bot.command(help="Pause the current song")
-async def pause(ctx: commands.Context):
-	await lavalink.pause(ctx.guild.id, True)
-	await ctx.send("Paused the track.")
+@bot.tree.command(name="leave", description="Leave the voice channel")
+async def leave(interaction: discord.Interaction):
+    await interaction.guild.change_voice_state(channel=None)
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.destroy()
+    await interaction.response.send_message("Left the voice channel.")
 
-@bot.command(help="Resume the current song")
-async def resume(ctx: commands.Context):
-	await lavalink.pause(ctx.guild.id, False)
-	await ctx.send("Resumed the track.")
+@bot.tree.command(name="search", description="Search for a song")
+@app_commands.describe(query="Search for a song")
+async def search(interaction: discord.Interaction, *, query: str):
+    results = await bot.lavalink.auto_search_tracks(query)
+    if not results:
+        await interaction.response.send_message("No results found.")
+        return
+    embed = discord.Embed(title="Search results for `%s`" % query)
+    results = results if isinstance(results, list) else results.tracks
+    for result in results:
+        embed.add_field(
+            name=result.title,
+            value="[%s](%s)" % (result.author, result.uri),
+            inline=False,
+        )
+    await interaction.response.send_message(embed=embed)
 
-@bot.command(help="Stop the current song")
-async def stop(ctx: commands.Context):
-	await lavalink.stop(ctx.guild.id)
-	await ctx.send("Stopped the track.")
+@bot.tree.command(name="play", description="Play a song")
+@app_commands.describe(query="The song to play")
+async def play(interaction: discord.Interaction, *, query: str):
+    tracks = await bot.lavalink.auto_search_tracks(query)
+    player = bot.lavalink.get_player(interaction.guild_id)
+    if not tracks:
+        return await interaction.response.send_message("No results found.")
+    elif isinstance(tracks, lavaplay.TrackLoadFailed):
+        await interaction.response.send_message("Error loading track, Try again later.\n```%s```" % tracks.message)
+        return
+    elif isinstance(tracks, lavaplay.PlayList):
+        await interaction.response.send_message(
+            "Playlist found, Adding to queue, Please wait..."
+        )
+        player.add_to_queue(
+            tracks.tracks, interaction.user.id
+        )
+        await interaction.edit_original_response(
+            content="Added to queue, tracks: {}, name: {}".format(
+                len(tracks.tracks), tracks.name
+            )
+        )
+        return
+    await player.play(tracks[0], interaction.user.id)
+    await interaction.response.send_message(f"Now playing: {tracks[0].title}")
 
-@bot.command(help="Skip the current song")
-async def skip(ctx: commands.Context):
-	await lavalink.skip(ctx.guild.id)
-	await ctx.send("Skipped the track.")
+@bot.tree.command(name="pause", description="Pause the current track")
+async def pause(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.pause(True)
+    await interaction.response.send_message("Paused the track.")
 
-@bot.command(help="Get queue info")
-async def queue(ctx: commands.Context):
-	queue = lavalink.queue(ctx.guild.id)
-	if not queue:
-		return await ctx.send("No tracks in queue.")
-	tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(queue)]
-	await ctx.send("\n".join(tracks))
+@bot.tree.command(name="resume", description="Resume the track")
+async def resume(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.pause(False)
+    await interaction.response.send_message("Resumed the track.")
 
-@bot.command(help="Set the volume")
-async def volume(ctx: commands.Context, volume: int):
-	await lavalink.volume(ctx.guild.id, volume)
-	await ctx.send(f"Set the volume to {volume}%.")
+@bot.tree.command(name="stop", description="Skip the current track")
+async def stop(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.stop()
+    await interaction.response.send_message("Stopped the track.")
 
-@bot.command(help="Seek to a position")
-async def seek(ctx: commands.Context, seconds: int):
-	await lavalink.seek(ctx.guild.id, seconds)
-	await ctx.send(f"Seeked to {seconds} seconds.")
+@bot.tree.command(name="skip", description="Skip the current track")
+async def skip(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.skip()
+    await interaction.response.send_message("Skipped the track.")
 
-@bot.command(help="Get the current song")
-async def shuffle(ctx: commands.Context):
-	await lavalink.shuffle(ctx.guild.id)
-	await ctx.send("Shuffled the queue.")
+@bot.tree.command(name="queue", description="Get the queue")
+async def queue(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    if not player.queue:
+        return await interaction.response.send_message("No tracks in queue.")
+    tracks = [f"**{i + 1}.** {t.title}" for (i, t) in enumerate(player.queue)]
+    await interaction.response.send_message("\n".join(tracks))
 
-@bot.command(help="Get the current song")
-async def remove(ctx: commands.Context, index: int):
-	await lavalink.remove(ctx.guild.id, index)
-	await ctx.send(f"Removed track {index}.")
+@bot.tree.command(name="volume", description="Set the volume of the player")
+@app_commands.describe(volume="Set the volume to a number between 0 and 100")
+async def volume(interaction: discord.Interaction, volume: int):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.volume(volume)
+    await interaction.response.send_message(f"Set the volume to {volume}%.")
 
-@bot.command(help="Get the current song")
-async def clear(ctx: commands.Context):
-	await lavalink.clear(ctx.guild.id)
-	await ctx.send("Cleared the queue.")
+@bot.tree.command(name="seek", description="Seek to a specific time")
+@app_commands.describe(position="The time to seek to")
+async def seek(interaction: discord.Interaction, position: int):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.seek(position)
+    await interaction.response.send_message(f"Seeked to {position} position.")
 
-@bot.command(help="Get the current song")
-async def repeat(ctx: commands.Context, status: bool):
-	await lavalink.repeat(ctx.guild.id, status)
-	await ctx.send("Repeated the queue.")
-	
-@bot.command(name="filter", help="Get the current song")
-async def filter_command(ctx: commands.Context):
+@bot.tree.command(name="shuffle", description="Shuffle the queue")
+async def shuffle(interaction: discord.Interaction):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    player.shuffle()
+    await interaction.response.send_message("Shuffled the queue.")
+
+@bot.tree.command(name="repeat", description="Repeat the current track")
+@app_commands.describe(repeat="Repeat status", queue="Repeat the queue")
+async def repeat(interaction: discord.Interaction, repeat: bool, queue: bool = False):
+    player = bot.lavalink.get_player(interaction.guild_id)
+    if queue:
+        player.queue_repeat(repeat)
+    else:
+        player.repeat(repeat)
+    await interaction.response.send_message("Repeated the queue.")
+
+@bot.tree.command(name="filter", description="Filter the queue")
+async def _filter(interaction: discord.Interaction):
     filters = lavaplay.Filters()
     filters.rotation(0.2)
-    filters.equalizer([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
-    await lavalink.filters(ctx.guild.id, filters)
-    await ctx.send("Filter applied.")
-	
+    player = bot.lavalink.get_player(interaction.guild_id)
+    await player.filters(filters)
+    await interaction.response.send_message("Filter applied.")
+
 @bot.event
 async def on_socket_raw_receive(msg):
-	data = json.loads(msg)
-	
-	if not data or not data["t"]:
-		return
-	if data["t"] == "VOICE_SERVER_UPDATE":
-		guild_id = int(data["d"]["guild_id"])
-		endpoint = data["d"]["endpoint"]
-		token = data["d"]["token"]
+    data = json.loads(msg)
 
-		await lavalink.raw_voice_server_update(guild_id, endpoint, token)
+    if not data or not data["t"]:
+        return
+    if data["t"] == "VOICE_SERVER_UPDATE":
+        guild_id = int(data["d"]["guild_id"])
+        endpoint = data["d"]["endpoint"]
+        token = data["d"]["token"]
+        player = bot.lavalink.get_player(guild_id)
+        if not player:
+            player  = bot.lavalink.create_player(guild_id)
+        await player.raw_voice_server_update(endpoint, token)
 
-	elif data["t"] == "VOICE_STATE_UPDATE":
-		if not data["d"]["channel_id"]:
-			channel_id = None
-		else:
-			channel_id = int(data["d"]["channel_id"])
+    elif data["t"] == "VOICE_STATE_UPDATE":
+        if not data["d"]["channel_id"]:
+            channel_id = None
+        else:
+            channel_id = int(data["d"]["channel_id"])
 
-		guild_id = int(data["d"]["guild_id"])
-		user_id = int(data["d"]["user_id"])
-		session_id = data["d"]["session_id"]
+        guild_id = int(data["d"]["guild_id"])
+        user_id = int(data["d"]["user_id"])
+        session_id = data["d"]["session_id"]
 
-		await lavalink.raw_voice_state_update(
-			guild_id,
-			user_id,
-			session_id,
-			channel_id,
-		)
+        player = bot.lavalink.get_player(guild_id)
+        if not player:
+            player  = bot.lavalink.create_player(guild_id)
+        await player.raw_voice_state_update(
+            user_id,
+            session_id,
+            channel_id,
+        )
+
 
 bot.run(TOKEN)
