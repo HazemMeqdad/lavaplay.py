@@ -63,8 +63,9 @@ class Player:
                     "encodedTrack": track.track,
                 }
             )
-        track.requester = requester
-        self.queue.append(track)
+        if not start:
+            track.requester = requester
+            self.queue.append(track)
 
     def repeat(self, stats: bool) -> None:
         """
