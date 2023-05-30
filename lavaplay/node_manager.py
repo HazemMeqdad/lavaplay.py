@@ -250,7 +250,7 @@ class Node:
         """
         return self._ws.is_connect if self._ws else False
 
-    async def connect(self):
+    def connect(self):
         """
         Connect to the lavalink websocket
         """

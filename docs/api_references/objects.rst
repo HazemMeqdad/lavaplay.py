@@ -2,6 +2,5 @@
 Objects API Reference
 =================
 
-
-.. automodule:: lavaplayer.objects
+.. automodule:: lavaplay.objects
    :members:

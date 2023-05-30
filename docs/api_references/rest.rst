@@ -1,15 +1,11 @@
 =================
-Request API Reference
+Rest API Reference
 =================
 
 The Request API is used to request a new transaction from the server.
 
 .. note::
-   The Request API is a available for the following transactions:
+   Player is debend on rest api. beacuse new lavalink version is only support rest api.
 
-   `Track Decoding <https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#track-decoding-api>`_ |
-   `RoutePlanner <https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#routeplanner-api>`_ 
-
-
-.. automodule:: lavaplayer.api
+.. automodule:: lavaplay.rest
    :members:

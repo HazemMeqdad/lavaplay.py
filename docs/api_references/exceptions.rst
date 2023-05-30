@@ -2,5 +2,5 @@
 Exceptions API Reference
 =================
 
-.. automodule:: lavaplayer.exceptions
+.. automodule:: lavaplay.exceptions
     :members:

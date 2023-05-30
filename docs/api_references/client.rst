@@ -2,5 +2,5 @@
 Client API Reference
 =================
 
-.. automodule:: lavaplayer.client
+.. automodule:: lavaplay.client
    :members:

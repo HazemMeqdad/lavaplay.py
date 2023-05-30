@@ -33,14 +33,18 @@ import lavaplay
 
 bot = hikari.GatewayBot("token")
 
-lavalink = lavaplay.Lavalink(
+lavalink = lavaplay.Lavalink()
+node = lavalink.create_node(
     host="localhost",
     port=2333,
     password="youshallnotpass",
     user_id=123
 )
 
-lavalink.connect()
+@bot.listen()
+async def on_ready(event: hikari.ShardReadyEvent) -> None:
+    await node.connect()
+
 bot.run()
 ```
 
