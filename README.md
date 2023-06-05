@@ -43,32 +43,36 @@ node = lavalink.create_node(
 
 @bot.listen()
 async def on_ready(event: hikari.ShardReadyEvent) -> None:
-    await node.connect()
+    node.connect()
 
 bot.run()
 ```
 
 examples for some methods.
 ```python
+# Player object
+player = node.get_player(guild_id)
+
 # Auto search mix with track or query
-await lavalink.auto_search_tracks("Rick Astley")
+await player.auto_search_tracks("Rick Astley")
 
 # Play track
-await lavalink.play(guild_id, track)
+await player.play(track)
 
 # Skip
-await lavalink.skip(guild_id)
+await player.skip()
 
 # Pause
-await lavalink.pause(guild_id, stats)
+await player.pause(stats)
 
 # Volume
-await lavalink.volume(guild_id, volume)
+await player.volume(volume)
 ```
 
 # Features
 
 - [ ] Spotify support
+- [x] new Rest api for lavalink support
 - [x] connection handler
 - [x] Support youtube playlist
 - [x] Add example for other discord wrapper library
