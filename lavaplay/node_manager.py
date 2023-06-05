@@ -77,7 +77,7 @@ class Node:
         loop: :class:`asyncio.AbstractEventLoop`
             The event loop to use.
         """
-        asyncio.set_event_loop(loop)
+        # asyncio.set_event_loop(loop)
         self.loop = loop
         self.event_manager._loop = loop
 
@@ -265,7 +265,7 @@ class Node:
             user_id=self.user_id, 
             shards_count=self.shards_count,
         )
-        asyncio.run_coroutine_threadsafe(self._ws._connect(), self.loop)
+        asyncio.ensure_future(self._ws._connect(), loop=self.loop)
 
     async def close(self):
         """
