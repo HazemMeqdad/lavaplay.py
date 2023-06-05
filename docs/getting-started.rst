@@ -6,26 +6,27 @@ Getting Started
 
 The lavaplay.py package is designed to be used with the lavalink server
 
+.. note::
+    Support lavalink server version 3.7.x or newer
+
 lavaplay.py can be installed using the following command:
 
 windows: ``pip install lavaplay.py``
-
 MacOS/Linux: ``pip3 install lavaplay.py``
 
 and need to install `java 11 <https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html>`_ * 
-LTS or newer required. and create a `application.yml <https://github.com/freyacodes/Lavalink/blob/master/LavalinkServer/application.yml.example>`_ file in the root of your project.
-
+LTS or newer required. and create a `application.yml <https://github.com/lavalink-devs/Lavalink/blob/master/LavalinkServer/application.yml.example>`_ file in the root of your project.
 and choice the port and address of the server.
 
 run the server use this command: ``java -jar Lavalink.jar``
 
-and install lasted `lavalink.jar <https://github.com/freyacodes/Lavalink/releases/download/3.4/Lavalink.jar>`_ version
+and install lasted `lavalink.jar <https://github.com/lavalink-devs/Lavalink/releases>`_ version
 
 after installing, you can use the lavaplay.py package in your code by importing it:
 
 ----
 
-Create your custom music bot:
+Starter bot
 ===============
 
 Your first bot can be written in just a few lines of code:
@@ -36,21 +37,27 @@ Your first bot can be written in just a few lines of code:
     import hikari
 
     # create a hikari client to get a events
-    bot = hikari.GatewayBot("...")
+    bot = hikari.GatewayBot(
+        "...",
+        intents=hikari.Intents.ALL
+    )
 
     # create a lavaplay client
-    lavalink = lavaplay.Lavalink(
+    lavalink = lavaplay.Lavalink()
+    node = lavalink.create_node(
         host="localhost",  # your lavalink host
         port=2333,  # your lavalink port
         password="youshallnotpass",  # your lavalink password
-        bot_id=123  # your bot id
+        user_id=0  # Will change later on the started event
     )
 
     # the started event is called when the client is ready
     @bot.listen(hikari.StartedEvent)
     async def started_event(event):
+        # change the bot user id
+        node.user_id = bot.get_me().id  
         # connect the lavaplay client to the hikari client
-        await lavalink.connect()
+        node.connect()
 
     # the message event is called when a message is sent
     @bot.listen(hikari.GuildMessageCreateEvent)
@@ -61,16 +68,16 @@ Your first bot can be written in just a few lines of code:
         # This command to connect to your voice channel
         if event.message.content == "!join":
             # get the voice channel
-            states = bot.cache.get_voice_states_view_for_guild(event.guild_id)
-            voice_state = [state async for state in states.iterator().filter(lambda i: i.user_id == event.author_id)]
-            
+            state = bot.cache.get_voice_state(event.guild_id, event.author_id)
             # check if the author is in a voice channel
-            if not voice_state:
+            if not state:
                 await bot.rest.create_message(event.channel_id, "You are not in a voice channel")
                 return 
             
             # connect to the voice channel
-            channel_id = voice_state[0].channel_id
+            channel_id = state.channel_id
+            # create a player for the guild
+            player = node.create_player(event.guild_id)
             await bot.update_voice_state(event.guild_id, channel_id, self_deaf=True)
             await bot.rest.create_message(event.get_channel(), f"Connected to <#{channel_id}>")
 
@@ -81,32 +88,37 @@ Your first bot can be written in just a few lines of code:
 
             # check if the query is empty
             if not query:
-                await bot.rest.create_message(event.channel.id, "Please provide a track to play")
+                await bot.rest.create_message(event.channel_id, "Please provide a track to play")
                 return
             
             # Search for the query
-            result = await lavalink.auto_search_tracks(query)
-            
-            # check if not found results
-            if not result:
-                await bot.rest.create_message(event.channel.id, "No results found")
+            try:
+                result = await node.auto_search_tracks(query)
+            except lavaplay.TrackLoadFailed:   # check if not found results
+                await bot.rest.create_message(event.channel_id, "Failed to load the track")
                 return
+            
+            # Get the player
+            player = node.get_player(event.guild_id)
 
             # Play the first result
-            await lavalink.play(event.guild_id, result[0], event.author_id)
-            await bot.rest.create_message(event.channel.id, f"Playing {result[0].title}")
+            await player.play(result[0], event.author_id)
+            await bot.rest.create_message(event.channel_id, f"Playing {result[0].title}")
 
 
     # the voice_state_update event is called when a user changes voice channel
     @bot.listen(hikari.VoiceStateUpdateEvent)
-    async def voice_state_update(v: hikari.VoiceStateUpdateEvent):
-        try:
-            event: hikari.VoiceServerUpdateEvent = await bot.wait_for(hikari.VoiceServerUpdateEvent, timeout=30)
-        except :
-            return
-        # Update the lavaplay client with the new voice server
-        await lavalink.voice_update(v.guild_id, v.state.session_id, event.token, event.raw_endpoint)
+    async def voice_state_update(event: hikari.VoiceStateUpdateEvent):
+        player = node.get_player(event.guild_id)
+        # Update the voice state of the player
+        await player.raw_voice_state_update(event.state.user_id, event.state.session_id, event.state.channel_id)
 
+    # the voice_server_update event is called when a user changes voice channel
+    @bot.listen(hikari.VoiceServerUpdateEvent)
+    async def voice_server_update(event: hikari.VoiceServerUpdateEvent):
+        player = node.get_player(event.guild_id)
+        # Update the voice server information of the player
+        await player.raw_voice_server_update(event.raw_endpoint, event.token)
 
     # run the bot
     bot.run()
