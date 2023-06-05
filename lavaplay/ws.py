@@ -25,7 +25,7 @@ class WS:
         node: "Node",
         host: str,
         port: int,
-        is_ssl: bool = False,
+        ssl: bool = False,
         password: str = None,
         user_id: int = None,
         shards_count: int = None,
@@ -33,7 +33,7 @@ class WS:
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
-        self.ws_url = f"{'wss' if is_ssl else 'ws'}://{host}:{port}/v3/websocket"
+        self.ws_url = f"{'wss' if ssl else 'ws'}://{host}:{port}/v3/websocket"
         self.node = node
         self._headers = {
             "Authorization": password,

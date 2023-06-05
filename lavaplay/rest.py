@@ -19,8 +19,8 @@ class RestApi:
     is_ssl: :class:`bool`
         Is server using ssl.
     """
-    def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, is_ssl: bool = False) -> None:
-        self.rest_uri = f"{'https' if is_ssl else 'http'}://{host}:{port}"
+    def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, ssl: bool = False) -> None:
+        self.rest_uri = f"{'https' if ssl else 'http'}://{host}:{port}"
         self.headers = {
             "Host": f"{host}:{port}",
             "Authorization": password

@@ -13,7 +13,7 @@ class Lavalink:
     def __init__(self) -> None:
         self._nodes: t.List[Node] = []
 
-    def create_node(self, host: str, port: int, password: str, user_id: int, *, name: str = None, shard_count: int = None, resume_key: str = None, resume_timeout: int = None, loop: t.Optional[asyncio.AbstractEventLoop] = None) -> Node:
+    def create_node(self, host: str, port: int, password: str, user_id: int, *, name: str = None, shard_count: int = None, ssl: bool = False, resume_key: str = None, resume_timeout: int = None, loop: t.Optional[asyncio.AbstractEventLoop] = None) -> Node:
         """
         Create a node for lavalink.
 
@@ -29,6 +29,8 @@ class Lavalink:
             The name for the node.
         shard_count: :class:`int`
             The shard count for the node.
+        ssl: :class:`bool`
+            Is server using ssl
         resume_key: :class:`str`
             The resume key for the node.
         resume_timeout: :class:`int`
@@ -36,7 +38,7 @@ class Lavalink:
         loop: :class:`asyncio.AbstractEventLoop`
             The event loop for the node.
         """
-        node = Node(host=host, port=port, password=password, user_id=user_id, name=name, shard_count=shard_count, resume_key=resume_key, resume_timeout=resume_timeout, loop=loop)
+        node = Node(host=host, port=port, password=password, user_id=user_id, name=name, shard_count=shard_count, resume_key=resume_key, resume_timeout=resume_timeout, is_ssl=ssl, loop=loop)
         self._nodes.append(node)
         return node
     

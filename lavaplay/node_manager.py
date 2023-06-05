@@ -42,7 +42,7 @@ class Node:
         resume_key: str = None, 
         resume_timeout: int = 180,
         shards_count: int = 1,
-        is_ssl: bool = False,
+        ssl: bool = False,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
         **kwargs
     ) -> None:
@@ -51,7 +51,7 @@ class Node:
         self.password = password
         self.user_id = user_id
         self.shards_count = shards_count
-        self.is_ssl = is_ssl
+        self.ssl = ssl
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
@@ -60,7 +60,7 @@ class Node:
         self._resume_timeout = resume_timeout
 
         # Unique identifier for the client.
-        self.rest = RestApi(host=self.host, port=self.port, password=self.password, is_ssl=self.is_ssl)
+        self.rest = RestApi(host=self.host, port=self.port, password=self.password, ssl=self.ssl)
         self.stats: Stats = None
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
 
