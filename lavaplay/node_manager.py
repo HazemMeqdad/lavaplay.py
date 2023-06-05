@@ -260,7 +260,7 @@ class Node:
             node=self, 
             host=self.host, 
             port=self.port, 
-            is_ssl=self.is_ssl, 
+            ssl=self.ssl, 
             password=self.password, 
             user_id=self.user_id, 
             shards_count=self.shards_count,
