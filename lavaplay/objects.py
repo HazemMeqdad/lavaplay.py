@@ -108,6 +108,49 @@ class PlayerState(BaseObject):
     ping: int
     position: t.Optional[int] = None
 
+@dataclass
+class Version(BaseObject):
+    """
+    Version info
+    """
+    semver: str
+    major: int
+    minor: int
+    patch: int
+    preRelease: str = None
+    build: str = None
+
+@dataclass
+class Git(BaseObject):
+    """
+    Git info
+    """
+    branch: str
+    commit: str
+    commitTime: int
+
+@dataclass
+class Plugin(BaseObject):
+    """
+    Plugin info
+    """
+    name: str
+    version: str
+
+@dataclass
+class Info(BaseObject):
+    """
+    
+    """
+    version: Version
+    buildTime: int
+    git: Git
+    jvm: str
+    lavaplayer: str
+    sourceManagers: t.List[str]
+    filters: t.List[str]
+    plugins: t.List[Plugin]
+
 @dataclass(init=True)
 class Filters:
     """
@@ -193,3 +236,9 @@ class Filters:
         Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
         """
         self._payload["lowPass"] = {"smoothing": smoothing}
+
+    def plugin_filters(self, map: dict):
+        """
+        Filter plugin configurations
+        """
+        self._payload["pluginFilters"] = map

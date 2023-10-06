@@ -143,3 +143,76 @@ class TrackLoadFailed(Exception):
         A severity level. Can be one of: ``'CRITICAL'``, ``'ERROR'``, ``'WARNING'``, ``'INFO'``, ``'DEBUG'``. 
         """
         return self._severity
+
+class requestFailed(Exception):
+    """
+    A error for request failed.
+    
+    Parameters
+    ----------
+    timestamp: :class:`int`
+        The timestamp of the error in milliseconds since the Unix epoch
+    status: :class:`int`
+        The HTTP status code
+    error: :class:`str`
+        The HTTP status code message
+    message: :class:`str`
+        The error message
+    path: :class:`str`
+        The request path
+    trace: :class:`bool`
+        The stack trace of the error when trace=true as query param has been sent
+    """
+    def __init__(self, timestamp: int, status: int, error: str, message: str, path: str, trace: bool = None) -> None:
+        self._timestamp = timestamp
+        self._status = status
+        self._error = error
+        self._message = message
+        self._path = path
+        self._trace = trace
+
+    @property
+    def timestamp(self):
+        """
+        The timestamp of the error in milliseconds since the Unix epoch
+        """
+        return self._timestamp
+    
+    @property
+    def status(self):
+        """
+        The HTTP status code
+        """
+        return self._status
+    
+    @property
+    def error(self):
+        """
+        The HTTP status code message
+        """
+        return self._error
+    
+    @property
+    def message(self):
+        """
+        The error message
+        """
+        return self._message
+    
+    @property
+    def path(self):
+        """
+        The request path
+        """
+        return self._path
+    
+    @property
+    def trace(self):
+        """
+        The stack trace of the error when trace=true as query param has been sent
+        """
+        return self._trace
+    
+    def __str__(self):
+        return f"{self._timestamp} {self._status} {self._error} {self._message} {self._path} {self._trace}"
+    

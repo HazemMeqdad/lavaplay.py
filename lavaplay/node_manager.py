@@ -4,7 +4,7 @@ from lavaplay.exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
-from .objects import Stats, Track, ConnectionInfo, PlayList
+from .objects import Stats, Track, ConnectionInfo, PlayList, Info
 from .events import Event
 from . import __version__
 from .utlits import get_event_loop, prossing_tracks
@@ -156,6 +156,48 @@ class Node:
             return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
         return prossing_tracks(result["tracks"])
 
+    async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
+        """
+        Search for tracks with soundcloud.
+
+        Parameters
+        ---------
+        query: :class:`str`
+            words for search with soundcloud. if not found result retrun empty :class:`list`
+        
+        Exceptions
+        ----------
+        :class:`lavaplayer.exceptions.TrackLoadFailed`
+            If the track could not be loaded.
+        """
+        result = await self.rest.load_tracks(f"scsearch:{query}")
+        if result["loadType"] == "NO_MATCHES":
+            return []
+        if result["loadType"] == "LOAD_FAILED":
+            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        return prossing_tracks(result["tracks"])
+    
+    async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
+        """
+        Search for tracks with youtube music.
+
+        Parameters
+        ---------
+        query: :class:`str`
+            words for search with youtube music. if not found result retrun empty :class:`list`
+
+        Exceptions
+        ----------
+        :class:`lavaplayer.exceptions.TrackLoadFailed`
+            If the track could not be loaded.
+        """
+        result = await self.rest.load_tracks(f"ytmsearch:{query}")
+        if result["loadType"] == "NO_MATCHES":
+            return []
+        if result["loadType"] == "LOAD_FAILED":
+            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        return prossing_tracks(result["tracks"])
+
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
         Load tracks for unknow sits or youtube or soundcloud or radio.
@@ -251,6 +293,20 @@ class Node:
         Check if the client is connect to the voice server.
         """
         return self._ws.is_connect if self._ws else False
+
+    async def info(self) -> Info:
+        """
+        Get info from lavalink server.
+        """
+        data = await self.rest.info()
+        return Info.from_kwargs(**data)
+
+    async def version(self) -> str:
+        """
+        Get version from lavalink server.
+        """
+        data = await self.rest.version()
+        return data["version"]
 
     def connect(self):
         """

@@ -1,6 +1,8 @@
 import aiohttp
 from . import routes
 import logging
+import typing as t
+from .exceptions import requestFailed
 
 _LOG = logging.getLogger("lavaplay.rest")
 
@@ -18,15 +20,18 @@ class RestApi:
         The password used for authentication.
     is_ssl: :class:`bool`
         Is server using ssl.
+    version: :class:`str`
+        The version for lavalink server, default version is `v4`, newer version and recommend.
     """
-    def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, ssl: bool = False) -> None:
+    def __init__(self, *, host: str = "127.0.0.1", port: int, password: str, ssl: bool = False, version: t.Literal["v3", "v4"] = "v4") -> None:
         self.rest_uri = f"{'https' if ssl else 'http'}://{host}:{port}"
+        self.api_version = version
         self.headers = {
             "Host": f"{host}:{port}",
             "Authorization": password
         }
 
-    async def request(self, method: str, rout: str, data: dict = {}) -> dict:
+    async def request(self, method: str, rout: str, data: dict = {}, without_version: bool = False) -> dict:
         """
         This function makes a request to the rest api for lavalink
 
@@ -44,12 +49,18 @@ class RestApi:
         :class:`dict`
             The response from the request.
         """
+        rout = rout if without_version else f"/{self.api_version}{rout}"
         async with aiohttp.ClientSession() as session:
             async with session.request(method, self.rest_uri + rout, headers=self.headers, json=data) as response:
                 _LOG.debug(f"{method} {self.rest_uri + rout}")
                 if method == "DELETE":
                     return
-                return await response.json()
+                response = await response.json()
+                print(response)
+                if response.get("error") is not None:
+                    _LOG.error(f"Request failed: {response}")
+                    raise requestFailed(**response)
+                return response
     
     async def load_tracks(self, identifier: str) -> dict:
         """
@@ -254,4 +265,16 @@ class RestApi:
             The response from the request.
         """
         res = await self.request("PATCH", routes.UPDATE_SESSION.format(sessionId=session_id), data=data)
+        return res
+
+    async def version(self) -> dict:
+        """
+        This function makes a request to the rest api for lavalink
+
+        Returns
+        -------
+        :class:`dict`
+            The response from the request.
+        """
+        res = await self.request("GET", routes.VERSION, without_version=True)
         return res

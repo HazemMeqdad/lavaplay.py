@@ -33,7 +33,7 @@ class WS:
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
-        self.ws_url = f"{'wss' if ssl else 'ws'}://{host}:{port}/v3/websocket"
+        self.ws_url = f"{'wss' if ssl else 'ws'}://{host}:{port}/v4/websocket"
         self.node = node
         self._headers = {
             "Authorization": password,
@@ -108,6 +108,8 @@ class WS:
             )
             if payload["resumed"] is True:
                 _LOG.info("Lavalink client resumed session successfully")
+            else:
+                _LOG.info("Lavalink client started a new session successfully")
             self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
         
         # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
@@ -160,6 +162,7 @@ class WS:
 
         elif event == "TrackEndEvent":
             self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
+            # reason = payload["reason"]
             if not player or not player.queue:
                 return
             if player._queue_repeat:
