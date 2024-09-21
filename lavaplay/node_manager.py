@@ -231,17 +231,20 @@ class Node:
             track result from base64
         """
         result = await self.rest.decode_track(track)
+        info = result["info"]
         return Track(
             track,
-            identifier=result["identifier"],
-            is_seekable=result["isSeekable"],
-            author=result["author"],
-            length=result["length"],
-            is_stream=result["isStream"],
-            position=result["position"],
-            source_name=result.get("sourceName", None),
-            title=result.get("title", None),
-            uri=result["uri"]
+            identifier=info["identifier"],
+            is_seekable=info["isSeekable"],
+            author=info["author"],
+            length=info["length"],
+            is_stream=info["isStream"],
+            position=info["position"],
+            source_name=info.get("sourceName", None),
+            title=info.get("title", None),
+            uri=info["uri"],
+            artworkUrl=info["artworkUrl"],
+            isrc=info["isrc"]
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:

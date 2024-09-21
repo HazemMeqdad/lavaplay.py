@@ -18,7 +18,7 @@ def get_event_loop() -> asyncio.AbstractEventLoop:
 
 def prossing_tracks(tracks: list) -> t.List[Track]:
     """
-    To prossing list of tracks from payload to Track object.
+    To process list of tracks from payload to Track object.
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def prossing_tracks(tracks: list) -> t.List[Track]:
         info = track["info"]
         list_tracks.append(
             Track(
-                encoded=track["encoded"],
+                encoded=track["encoded"],  # Use 'encoded' instead of 'track'
                 identifier=info["identifier"],
                 is_seekable=info["isSeekable"],
                 author=info["author"],
@@ -39,7 +39,35 @@ def prossing_tracks(tracks: list) -> t.List[Track]:
                 position=info["position"],
                 source_name=info.get("sourceName", None),
                 title=info.get("title", None),
-                uri=info["uri"]
+                uri=info["uri"],
+                artworkUrl=info["artworkUrl"],
+                isrc=info["isrc"]
             )
         )
     return list_tracks
+
+
+def prossing_single_track(track: dict) -> t.List[Track]:
+    """
+    To process one track from payload to Track object.
+
+    Parameters
+    ----------
+    track: :class:`list`
+        The track.
+    """
+    info = track["info"]
+    return [Track(
+        encoded=track["encoded"],
+        identifier=info["identifier"],
+        is_seekable=info["isSeekable"],
+        author=info["author"],
+        length=info["length"],
+        is_stream=info["isStream"],
+        position=info["position"],
+        source_name=info.get("sourceName", None),
+        title=info.get("title", None),
+        uri=info["uri"],
+        artworkUrl=info["artworkUrl"],
+        isrc=info["isrc"]
+    )]

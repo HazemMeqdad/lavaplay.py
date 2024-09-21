@@ -72,6 +72,8 @@ class Track(BaseObject):
     position: int
     title: str
     uri: str
+    artworkUrl: str
+    isrc: str
     requester: t.Union[str, None] = None
     source_name: t.Optional[str] = None
     timestamp: t.Optional[t.Any] = None
