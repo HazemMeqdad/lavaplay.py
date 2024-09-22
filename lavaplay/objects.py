@@ -63,7 +63,7 @@ class Track(BaseObject):
     """
     Info track object.
     """
-    track: str
+    encoded: str
     identifier: str
     is_seekable: bool
     author: str

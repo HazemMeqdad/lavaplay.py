@@ -60,7 +60,7 @@ class Player:
                 session_id=self.node.session_id, 
                 guild_id=self.guild_id,
                 data={
-                    "encodedTrack": track.track,
+                    "encodedTrack": track.encoded,
                 }
             )
         if not start:

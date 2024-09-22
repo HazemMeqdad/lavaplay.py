@@ -154,7 +154,7 @@ class Node:
             return []
         if result["loadType"] == "LOAD_FAILED":
             return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        return prossing_tracks(result["data"])
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
@@ -175,7 +175,7 @@ class Node:
             return []
         if result["loadType"] == "LOAD_FAILED":
             return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        return prossing_tracks(result["data"])
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -196,7 +196,7 @@ class Node:
             return []
         if result["loadType"] == "LOAD_FAILED":
             return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        return prossing_tracks(result["data"])
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -219,7 +219,7 @@ class Node:
             raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
         if result["loadType"] == "PLAYLIST_LOADED":
             return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
-        return prossing_tracks(result["tracks"])
+        return prossing_tracks(result["data"])
 
     async def decodetrack(self, track: str) -> Track:
         """
