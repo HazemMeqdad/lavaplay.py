@@ -145,8 +145,8 @@ class WS:
             
     async def event_dispatch(self, payload: dict):
         # encodedTrack is for Lavalink new version v4
-        if payload.get("encodedTrack"):
-            track = await self.node.decodetrack(payload.get("encodedTrack"))
+        if payload["track"]["encoded"]:
+            track = await self.node.decodetrack(payload["track"]["encoded"])
         event = payload["type"]
 
         guild_id = int(payload["guildId"])
