@@ -30,7 +30,7 @@ def prossing_tracks(tracks: list) -> t.List[Track]:
         info = track["info"]
         list_tracks.append(
             Track(
-                encoded=track["encoded"],  # Use 'encoded' instead of 'track'
+                encoded=track["encoded"],
                 identifier=info["identifier"],
                 is_seekable=info["isSeekable"],
                 author=info["author"],
