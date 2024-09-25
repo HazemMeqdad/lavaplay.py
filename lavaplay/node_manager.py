@@ -243,8 +243,8 @@ class Node:
             source_name=info.get("sourceName", None),
             title=info.get("title", None),
             uri=info["uri"],
-            artworkUrl=info["artworkUrl"],
-            isrc=info["isrc"]
+            artworkUrl=info.get("artworkUrl", None),
+            isrc=info.get("isrc", None)
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
