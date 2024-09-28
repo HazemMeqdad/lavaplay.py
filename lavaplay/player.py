@@ -289,8 +289,8 @@ class Player:
                 }
             }
         )
-        self._is_connected = res["voice"]["connected"]
-        self._ping = res["voice"]["ping"]
+        self._is_connected = res["state"]["connected"]
+        self._ping = res["state"]["ping"]
 
     async def raw_voice_state_update(self, user_id: int, session_id: str, channel_id: t.Optional[int]) -> None:
         """
