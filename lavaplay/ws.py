@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 import logging
-from lavaplay.utlits import generate_resume_key
+from .utlits import generate_resume_key
 from .objects import (
     Stats, Cpu, Memory, FrameStats
 )
@@ -145,8 +145,8 @@ class WS:
             
     async def event_dispatch(self, payload: dict):
         # encodedTrack is for Lavalink new version v4
-        if payload.get("track")("encoded"):
-            track = await self.node.decodetrack(payload.get("track")("encoded"))
+        if payload["track"]["encoded"]:
+            track = payload["track"]
         event = payload["type"]
 
         guild_id = int(payload["guildId"])
