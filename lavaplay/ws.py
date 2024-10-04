@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 import logging
-from .utlits import generate_resume_key
+from .utlits import generate_resume_key , event_track
 from .objects import (
     Stats, Cpu, Memory, FrameStats
 )
@@ -158,10 +158,10 @@ class WS:
         player = self.node.get_player(guild_id)
 
         if event == "TrackStartEvent":
-            self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
+            self.emitter.emit("TrackStartEvent", TrackStartEvent(event_track(track), guild_id))
 
         elif event == "TrackEndEvent":
-            self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
+            self.emitter.emit("TrackEndEvent", TrackEndEvent(event_track(track), guild_id, payload["reason"]))
             # reason = payload["reason"]
             if not player or not player.queue:
                 return
