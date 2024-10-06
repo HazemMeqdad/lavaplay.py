@@ -1,13 +1,13 @@
 import asyncio
 import typing as t
-from lavaplay.exceptions import TrackLoadFailed
+from .exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
 from .objects import Stats, Track, ConnectionInfo, PlayList, Info
 from .events import Event
 from . import __version__
-from .utlits import get_event_loop, prossing_tracks
+from .utlits import get_event_loop, prossing_tracks , prossing_single_track
 import logging
 from .player import Player
 
@@ -219,7 +219,8 @@ class Node:
             raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
         if result["loadType"] == "PLAYLIST_LOADED":
             return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
-        return prossing_tracks(result["data"])
+        if result["loadType"] == "track":
+            return prossing_single_track(result["data"])
 
     async def decodetrack(self, track: str) -> Track:
         """

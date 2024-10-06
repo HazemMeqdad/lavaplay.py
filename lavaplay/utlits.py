@@ -71,3 +71,29 @@ def prossing_single_track(track: dict) -> t.List[Track]:
         artworkUrl=info.get("artworkUrl", None),
         isrc=info.get("isrc", None)
     )]
+
+
+def event_track(track: dict):
+    """
+    To process one track from payload to Track object.
+
+    Parameters
+    ----------
+    track: :class:`list`
+        The track.
+    """
+    info = track["info"]
+    return [Track(
+        encoded=track["encoded"],
+        identifier=info["identifier"],
+        is_seekable=info["isSeekable"],
+        author=info["author"],
+        length=info["length"],
+        is_stream=info["isStream"],
+        position=info["position"],
+        source_name=info.get("sourceName", None),
+        title=info.get("title", None),
+        uri=info["uri"],
+        artworkUrl=info.get("artworkUrl", None),
+        isrc=info.get("isrc", None)
+    )]
