@@ -221,7 +221,6 @@ class Node:
             return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
         if result["loadType"] == "track":
             return prossing_single_track(result["data"])
-        return prossing_tracks(result["data"])
 
     async def decodetrack(self, track: str) -> Track:
         """
