@@ -213,12 +213,13 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(query)
+        res = result["data"]
         if result["loadType"] == "NO_MATCHES":
             return []
         if result["loadType"] == "LOAD_FAILED":
             raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        if result["loadType"] == "PLAYLIST_LOADED":
-            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
+        if result["loadType"] == "playlist":
+            return PlayList(res["info"]["name"], res["info"]["selectedTrack"], prossing_tracks(res["tracks"]))
         if result["loadType"] == "track":
             return prossing_single_track(result["data"])
 
