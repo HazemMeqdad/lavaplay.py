@@ -41,7 +41,8 @@ def prossing_tracks(tracks: list) -> t.List[Track]:
                 title=info.get("title", None),
                 uri=info["uri"],
                 artworkUrl=info.get("artworkUrl", None),
-                isrc=info.get("isrc", None)
+                isrc=info.get("isrc", None),
+                plugin_info=track["pluginInfo"]
             )
         )
     return list_tracks
@@ -69,7 +70,8 @@ def prossing_single_track(track: dict) -> t.List[Track]:
         title=info.get("title", None),
         uri=info["uri"],
         artworkUrl=info.get("artworkUrl", None),
-        isrc=info.get("isrc", None)
+        isrc=info.get("isrc", None),
+        plugin_info=track["pluginInfo"]
     )]
 
 
@@ -95,5 +97,6 @@ def event_track(track: dict):
         title=info.get("title", None),
         uri=info["uri"],
         artworkUrl=info.get("artworkUrl", None),
-        isrc=info.get("isrc", None)
+        isrc=info.get("isrc", None),
+        plugin_info=track["pluginInfo"]
     )]
