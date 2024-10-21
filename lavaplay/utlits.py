@@ -100,3 +100,29 @@ def event_track(track: dict):
         isrc=info.get("isrc", None),
         plugin_info=track["pluginInfo"]
     )]
+
+
+def event_track(track: dict):
+    """
+    To process one track from payload to Track object.
+
+    Parameters
+    ----------
+    track: :class:`list`
+        The track.
+    """
+    info = track["info"]
+    return [Track(
+        encoded=track["encoded"],
+        identifier=info["identifier"],
+        is_seekable=info["isSeekable"],
+        author=info["author"],
+        length=info["length"],
+        is_stream=info["isStream"],
+        position=info["position"],
+        source_name=info.get("sourceName", None),
+        title=info.get("title", None),
+        uri=info["uri"],
+        artworkUrl=info.get("artworkUrl", None),
+        isrc=info.get("isrc", None)
+    )]

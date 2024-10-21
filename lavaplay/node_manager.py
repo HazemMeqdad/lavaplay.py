@@ -219,13 +219,12 @@ class Node:
         res = result["data"]
         if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "error":
-            raise TrackLoadFailed(result["data"]["message"], result["data"]["severity"], result["data"]["cause"])
-        if result["loadType"] == "playlist":
-            return PlayList(res["info"]["name"], res["info"]["selectedTrack"], prossing_tracks(res["tracks"]))
+        if result["loadType"] == "LOAD_FAILED":
+            raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        if result["loadType"] == "PLAYLIST_LOADED":
+            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
         if result["loadType"] == "track":
             return prossing_single_track(result["data"])
-        return prossing_tracks(result["data"])
 
 
     async def decodetrack(self, track: str) -> Track:
