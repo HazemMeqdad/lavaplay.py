@@ -149,11 +149,12 @@ class Node:
         :class:`lavaplayer.exceptions.TrackLoadFailed`
             If the track could not be loaded.
         """
-        result = await self.rest.load_tracks(f"ytsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        result = await self.rest.load_tracks(f"spsearch:{query}")
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
         return prossing_tracks(result["data"])
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
@@ -171,10 +172,11 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(f"scsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
         return prossing_tracks(result["data"])
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
@@ -192,10 +194,11 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(f"ytmsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
         return prossing_tracks(result["data"])
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
@@ -213,7 +216,8 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(query)
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
         if result["loadType"] == "LOAD_FAILED":
             raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
@@ -222,10 +226,11 @@ class Node:
         if result["loadType"] == "track":
             return prossing_single_track(result["data"])
 
+
     async def decodetrack(self, track: str) -> Track:
         """
         This method is used to decode a track from base64 only server can resolve, to info can anyone understanding it
-        
+
         Parameters
         ---------
         track: :class:`str`
