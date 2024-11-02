@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 import logging
-from .utlits import generate_resume_key , event_track
+from .utlits import event_track
 from .objects import (
     Stats, Cpu, Memory, FrameStats
 )
@@ -28,8 +28,6 @@ class WS:
         ssl: bool = False,
         password: str = None,
         user_id: int = None,
-        shards_count: int = None,
-        resume_key: t.Optional[str] = None,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
@@ -38,13 +36,11 @@ class WS:
         self._headers = {
             "Authorization": password,
             "User-Id": str(user_id),
-            "Client-Name": f"Lavaplay.py/{__version__}",
-            "Num-Shards": str(shards_count)
+            "Client-Name": f"Lavaplay.py/{__version__}"
         }
         self._loop = loop or node.loop
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
-        self.resume_key = resume_key or self.node._resume_key or generate_resume_key()
         self._session_id: str = None
     
     @property
@@ -52,8 +48,6 @@ class WS:
         return self._session_id
 
     async def _connect(self):
-        if self.resume_key:
-            self._headers["Resume-Key"] = self.resume_key
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
             self.session = session
             _LOG.info(f"Connecting to websocket {self.ws_url}")
@@ -102,7 +96,7 @@ class WS:
             await self.node.rest.update_session(
                 self._session_id,
                 data={
-                    "resumingKey": self.resume_key,
+                    "resuming": False,
                     "timeout": self.node._resume_timeout or 180
                 }
             )
