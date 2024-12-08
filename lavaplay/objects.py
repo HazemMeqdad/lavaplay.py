@@ -75,6 +75,7 @@ class Track(BaseObject):
     artworkUrl: str
     isrc: str
     plugin_info: str
+    load_type: str
     requester: t.Union[str, None] = None
     source_name: t.Optional[str] = None
     timestamp: t.Optional[t.Any] = None

@@ -149,13 +149,13 @@ class Node:
         :class:`lavaplayer.exceptions.TrackLoadFailed`
             If the track could not be loaded.
         """
-        result = await self.rest.load_tracks(f"spsearch:{query}")
+        result = await self.rest.load_tracks(f"ytsearch:{query}")
         res = result["data"]
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"])
+        return prossing_tracks(result["data"], result)
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
@@ -177,7 +177,7 @@ class Node:
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"])
+        return prossing_tracks(result["data"],result)
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -199,7 +199,7 @@ class Node:
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"])
+        return prossing_tracks(result["data"],result)
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -209,7 +209,7 @@ class Node:
         ---------
         query: :class:`str`
             track url, if not found result retrun empty :class:`list`
-        
+
         Exceptions
         ----------
         :class:`lavaplayer.exceptions.TrackLoadFailed`
@@ -217,14 +217,18 @@ class Node:
         """
         result = await self.rest.load_tracks(query)
         res = result["data"]
+
+        if result["loadType"] == "playlist":
+            tracks = prossing_tracks(res["tracks"],result)
+            return PlayList(res["info"]["name"], res["info"]["selectedTrack"], tracks)
+        if result["loadType"] == "track":
+            return prossing_single_track(result["data"],result)
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
         if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        if result["loadType"] == "PLAYLIST_LOADED":
-            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
-        if result["loadType"] == "track":
-            return prossing_single_track(result["data"])
+        return prossing_tracks(result["data"],result)
+
 
 
     async def decodetrack(self, track: str) -> Track:
@@ -250,7 +254,9 @@ class Node:
             title=info.get("title", None),
             uri=info["uri"],
             artworkUrl=info.get("artworkUrl", None),
-            isrc=info.get("isrc", None)
+            isrc=info.get("isrc", None),
+            load_type=result.get("loadType", None),
+            plugin_info=track["pluginInfo"]
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
@@ -263,7 +269,7 @@ class Node:
             tracks result from base64
         """
         result = await self.rest.decode_tracks(tracks)
-        return prossing_tracks(result)
+        return prossing_tracks(result,result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
@@ -327,8 +333,7 @@ class Node:
             port=self.port, 
             ssl=self.ssl, 
             password=self.password, 
-            user_id=self.user_id, 
-            shards_count=self.shards_count,
+            user_id=self.user_id
         )
         asyncio.ensure_future(self._ws._connect(), loop=self.loop)
 

@@ -277,3 +277,4 @@ class RestApi:
         """
         res = await self.request("GET", routes.VERSION, without_version=True)
         return res
+

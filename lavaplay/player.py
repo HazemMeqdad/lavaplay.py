@@ -1,6 +1,6 @@
 import typing as t
 import asyncio
-from .objects import Track, Filters, ConnectionInfo
+from .objects import Track, Filters, ConnectionInfo , PlayList
 from .exceptions import VolumeError
 import random
 import logging
@@ -33,8 +33,8 @@ class Player:
         """
         Add tracks to queue. use to load a playlist result.
 
-        >>> playlist = lavaplayer.search_youtube("playlist url")
-        >>> lavaplayer.add_to_queue(playlist.tracks)
+        >>> playlist = lavaplay.search_youtube("playlist url")
+        >>> lavaplay.add_to_queue(playlist.tracks)
 
         Parameters
         ---------
@@ -55,17 +55,30 @@ class Player:
         start: :class:`bool`
             force play queue is ignored
         """
+        if not track.encoded:
+            raise ValueError("Encoded of the track is None")
+
         if len(self.queue) == 0 or start:
             await self.rest.update_player(
-                session_id=self.node.session_id, 
+                session_id=self.node.session_id,
                 guild_id=self.guild_id,
-                data={
-                    "encodedTrack": track.encoded,
-                }
+                data={"encodedTrack": track.encoded}
             )
         if not start:
             track.requester = requester
             self.queue.append(track)
+
+    async def play_playlist(self, playlist: PlayList):
+        """
+        Play track or add to the queue list.
+
+        Parameters
+        ---------
+        playlist: :class:`bool`
+            user id for requester the play track
+        """
+        for track in playlist.tracks:
+            await self.play(track)
 
     def repeat(self, stats: bool) -> None:
         """
