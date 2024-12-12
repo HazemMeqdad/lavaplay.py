@@ -333,7 +333,8 @@ class Node:
             port=self.port, 
             ssl=self.ssl, 
             password=self.password, 
-            user_id=self.user_id
+            user_id=self.user_id,
+            shards_count=self.shards_count
         )
         asyncio.ensure_future(self._ws._connect(), loop=self.loop)
 

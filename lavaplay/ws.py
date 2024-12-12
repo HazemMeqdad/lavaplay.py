@@ -28,6 +28,7 @@ class WS:
         ssl: bool = False,
         password: str = None,
         user_id: int = None,
+        shards_count: int = None,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
@@ -36,7 +37,8 @@ class WS:
         self._headers = {
             "Authorization": password,
             "User-Id": str(user_id),
-            "Client-Name": f"Lavaplay.py/{__version__}"
+            "Client-Name": f"Lavaplay.py/{__version__}",
+            "Num-Shards": str(shards_count)
         }
         self._loop = loop or node.loop
         self.emitter: Emitter = node.event_manager
