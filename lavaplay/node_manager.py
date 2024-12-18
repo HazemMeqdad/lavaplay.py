@@ -1,13 +1,13 @@
 import asyncio
 import typing as t
-from lavaplay.exceptions import TrackLoadFailed
+from .exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
 from .objects import Stats, Track, ConnectionInfo, PlayList, Info
 from .events import Event
 from . import __version__
-from .utlits import get_event_loop, prossing_tracks
+from .utlits import get_event_loop, prossing_tracks , prossing_single_track
 import logging
 from .player import Player
 
@@ -150,11 +150,12 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(f"ytsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"], result)
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
@@ -171,11 +172,12 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(f"scsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"],result)
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -192,11 +194,12 @@ class Node:
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(f"ytmsearch:{query}")
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            return TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        return prossing_tracks(result["tracks"])
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"],result)
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -206,42 +209,54 @@ class Node:
         ---------
         query: :class:`str`
             track url, if not found result retrun empty :class:`list`
-        
+
         Exceptions
         ----------
         :class:`lavaplayer.exceptions.TrackLoadFailed`
             If the track could not be loaded.
         """
         result = await self.rest.load_tracks(query)
-        if result["loadType"] == "NO_MATCHES":
+        res = result["data"]
+
+        if result["loadType"] == "playlist":
+            tracks = prossing_tracks(res["tracks"],result)
+            return PlayList(res["info"]["name"], res["info"]["selectedTrack"], tracks)
+        if result["loadType"] == "track":
+            return prossing_single_track(result["data"],result)
+        if result["loadType"] == "error":
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        if result["loadType"] == "empty":
             return []
-        if result["loadType"] == "LOAD_FAILED":
-            raise TrackLoadFailed(result["exception"]["message"], result["exception"]["severity"])
-        if result["loadType"] == "PLAYLIST_LOADED":
-            return PlayList(result["playlistInfo"]["name"], result["playlistInfo"]["selectedTrack"], prossing_tracks(result["tracks"]))
-        return prossing_tracks(result["tracks"])
+        return prossing_tracks(result["data"],result)
+
+
 
     async def decodetrack(self, track: str) -> Track:
         """
         This method is used to decode a track from base64 only server can resolve, to info can anyone understanding it
-        
+
         Parameters
         ---------
         track: :class:`str`
             track result from base64
         """
         result = await self.rest.decode_track(track)
+        info = result["info"]
         return Track(
             track,
-            identifier=result["identifier"],
-            is_seekable=result["isSeekable"],
-            author=result["author"],
-            length=result["length"],
-            is_stream=result["isStream"],
-            position=result["position"],
-            source_name=result.get("sourceName", None),
-            title=result.get("title", None),
-            uri=result["uri"]
+            identifier=info["identifier"],
+            is_seekable=info["isSeekable"],
+            author=info["author"],
+            length=info["length"],
+            is_stream=info["isStream"],
+            position=info["position"],
+            source_name=info.get("sourceName", None),
+            title=info.get("title", None),
+            uri=info["uri"],
+            artworkUrl=info.get("artworkUrl", None),
+            isrc=info.get("isrc", None),
+            load_type=result.get("loadType", None),
+            plugin_info=track["pluginInfo"]
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
@@ -254,7 +269,7 @@ class Node:
             tracks result from base64
         """
         result = await self.rest.decode_tracks(tracks)
-        return prossing_tracks(result)
+        return prossing_tracks(result,result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
@@ -318,8 +333,8 @@ class Node:
             port=self.port, 
             ssl=self.ssl, 
             password=self.password, 
-            user_id=self.user_id, 
-            shards_count=self.shards_count,
+            user_id=self.user_id,
+            shards_count=self.shards_count
         )
         asyncio.ensure_future(self._ws._connect(), loop=self.loop)
 

@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 import logging
-from lavaplay.utlits import generate_resume_key
+from .utlits import event_track
 from .objects import (
     Stats, Cpu, Memory, FrameStats
 )
@@ -29,7 +29,6 @@ class WS:
         password: str = None,
         user_id: int = None,
         shards_count: int = None,
-        resume_key: t.Optional[str] = None,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         self.ws = None
@@ -44,7 +43,6 @@ class WS:
         self._loop = loop or node.loop
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
-        self.resume_key = resume_key or self.node._resume_key or generate_resume_key()
         self._session_id: str = None
     
     @property
@@ -52,8 +50,6 @@ class WS:
         return self._session_id
 
     async def _connect(self):
-        if self.resume_key:
-            self._headers["Resume-Key"] = self.resume_key
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
             self.session = session
             _LOG.info(f"Connecting to websocket {self.ws_url}")
@@ -102,7 +98,7 @@ class WS:
             await self.node.rest.update_session(
                 self._session_id,
                 data={
-                    "resumingKey": self.resume_key,
+                    "resuming": False,
                     "timeout": self.node._resume_timeout or 180
                 }
             )
@@ -145,8 +141,8 @@ class WS:
             
     async def event_dispatch(self, payload: dict):
         # encodedTrack is for Lavalink new version v4
-        if payload.get("encodedTrack"):
-            track = await self.node.decodetrack(payload.get("encodedTrack"))
+        if payload["track"]["encoded"]:
+            track = payload["track"]
         event = payload["type"]
 
         guild_id = int(payload["guildId"])
@@ -158,10 +154,10 @@ class WS:
         player = self.node.get_player(guild_id)
 
         if event == "TrackStartEvent":
-            self.emitter.emit("TrackStartEvent", TrackStartEvent(track, guild_id))
+            self.emitter.emit("TrackStartEvent", TrackStartEvent(event_track(track), guild_id))
 
         elif event == "TrackEndEvent":
-            self.emitter.emit("TrackEndEvent", TrackEndEvent(track, guild_id, payload["reason"]))
+            self.emitter.emit("TrackEndEvent", TrackEndEvent(event_track(track), guild_id, payload["reason"]))
             # reason = payload["reason"]
             if not player or not player.queue:
                 return

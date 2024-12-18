@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from lavaplay.exceptions import FiltersError
+from .exceptions import FiltersError
 import typing as t
 from inspect import signature
 
@@ -63,7 +63,7 @@ class Track(BaseObject):
     """
     Info track object.
     """
-    track: str
+    encoded: str
     identifier: str
     is_seekable: bool
     author: str
@@ -72,6 +72,10 @@ class Track(BaseObject):
     position: int
     title: str
     uri: str
+    artworkUrl: str
+    isrc: str
+    plugin_info: str
+    load_type: str
     requester: t.Union[str, None] = None
     source_name: t.Optional[str] = None
     timestamp: t.Optional[t.Any] = None

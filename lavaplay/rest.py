@@ -27,7 +27,6 @@ class RestApi:
         self.rest_uri = f"{'https' if ssl else 'http'}://{host}:{port}"
         self.api_version = version
         self.headers = {
-            "Host": f"{host}:{port}",
             "Authorization": password
         }
 
@@ -278,3 +277,4 @@ class RestApi:
         """
         res = await self.request("GET", routes.VERSION, without_version=True)
         return res
+
