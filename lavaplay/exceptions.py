@@ -141,7 +141,7 @@ class TrackLoadFailed(Exception):
     @property
     def severity(self):
         """
-        A severity level. Can be one of: ``'CRITICAL'``, ``'ERROR'``, ``'WARNING'``, ``'INFO'``, ``'DEBUG'``. 
+        A severity level. Can be one of: ```COMMON```, ```SUSPICIOUS``` , ```FAULT```.
         """
         return self._severity
 
@@ -216,4 +216,3 @@ class requestFailed(Exception):
     
     def __str__(self):
         return f"{self._timestamp} {self._status} {self._error} {self._message} {self._path} {self._trace}"
-    
