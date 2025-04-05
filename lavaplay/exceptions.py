@@ -216,4 +216,3 @@ class requestFailed(Exception):
     
     def __str__(self):
         return f"{self._timestamp} {self._status} {self._error} {self._message} {self._path} {self._trace}"
-    
