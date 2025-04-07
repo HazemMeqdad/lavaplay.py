@@ -95,6 +95,14 @@ class ConnectionInfo(BaseObject):
     session_id: str
     channel_id: t.Optional[int]
 
+@dataclass
+class VoiceInfo(BaseObject):
+    """
+    Info of a voice.
+    """
+    token: str
+    endpoint: str
+
 
 @dataclass
 class PlayList(BaseObject):
