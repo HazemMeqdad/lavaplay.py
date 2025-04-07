@@ -62,7 +62,7 @@ class Player:
             await self.rest.update_player(
                 session_id=self.node.session_id,
                 guild_id=self.guild_id,
-                data={"encodedTrack": track.encoded}
+                data={"track": {"encoded": track.encoded}}
             )
         if not start:
             track.requester = requester
@@ -133,9 +133,7 @@ class Player:
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
-            data={
-                "encodedTrack": None
-            }
+            data={"track": {"encoded": None}}
         )
 
     async def skip(self) -> None:
@@ -147,9 +145,7 @@ class Player:
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
-            data={
-                "encodedTrack": None
-            }
+            data={"track": {"encoded": None}}
         )
 
     async def pause(self, stats: bool) -> None:
