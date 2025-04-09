@@ -84,8 +84,6 @@ class WS:
             self.is_connect = False
             await self._connect()
 
-
-
     async def check_connection(self):
         while self.ws.closed is None or not self.ws.closed or not self.is_connected:
             _LOG.warning("Websocket closed unexpectedly - reconnecting in 10 seconds")
