@@ -23,6 +23,9 @@ Its a lavalink nodes manger to make a music bots for discord with python.
 
 lavaplay.py is a nodes manager to connection with discord voice gateway, easy to create a music bot, you can use to anything async discord wrapper library
 
+> [!NOTE]
+> Lavaplay now support lavalink v4 ( 1.0.13a+ )
+
 # Usage
 
 example for create connecting with lavalink server using [hikari](https://github.com/hikari-py/hikari).
@@ -71,9 +74,10 @@ await player.volume(volume)
 
 # Features
 
-- [ ] Spotify support
+- [x] Lavalink v4 support ( 1.0.13a+ )
 - [x] new Rest api for lavalink support
 - [x] connection handler
+- [ ] Multi-Node Support ( Coming soon )
 - [x] Support youtube playlist
 - [x] Add example for other discord wrapper library
 
