@@ -1,6 +1,6 @@
 import typing as t
 import asyncio
-from .objects import Track, Filters, ConnectionInfo , PlayList
+from .objects import Track, Filters, ConnectionInfo , PlayList , VoiceInfo
 from .exceptions import VolumeError
 import random
 import logging
@@ -18,6 +18,7 @@ class Player:
         self._voice_state: t.Optional[dict] = None
         self.user_id: int = node.user_id
         self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
+        self._voice_info: t.Dict[int, VoiceInfo] = {}
 
         self._volume: int = 100
         self._filters: Filters = Filters()
@@ -62,7 +63,7 @@ class Player:
             await self.rest.update_player(
                 session_id=self.node.session_id,
                 guild_id=self.guild_id,
-                data={"encodedTrack": track.encoded}
+                data={"track": {"encoded": track.encoded}}
             )
         if not start:
             track.requester = requester
@@ -133,9 +134,7 @@ class Player:
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
-            data={
-                "encodedTrack": None
-            }
+            data={"track": {"encoded": None}}
         )
 
     async def skip(self) -> None:
@@ -147,9 +146,7 @@ class Player:
         await self.rest.update_player(
             session_id=self.node.session_id,
             guild_id=self.guild_id,
-            data={
-                "encodedTrack": None
-            }
+            data={"track": {"encoded": None}}
         )
 
     async def pause(self, stats: bool) -> None:
@@ -339,7 +336,9 @@ class Player:
         connection_info = self._voice_handlers.get(self.guild_id)
         if not connection_info:
             return
+        self._voice_info[self.guild_id] = VoiceInfo(token, endpoint)
         await self.voice_update(connection_info.session_id, token, endpoint, connection_info.channel_id)
+
 
     @property
     def is_connected(self) -> bool:

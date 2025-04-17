@@ -71,6 +71,7 @@ async def play_command(ctx: lightbulb.context.Context):
         return
     elif isinstance(result, lavaplay.PlayList):
         player.add_to_queue(result.tracks, ctx.author.id)
+        await player.play_playlist(result.tracks)
         await ctx.respond(f"added {len(result.tracks)} tracks to queue")
         return 
 

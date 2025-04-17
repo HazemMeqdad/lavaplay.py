@@ -110,6 +110,7 @@ async def message_create(event: hikari.GuildMessageCreateEvent):
             return
         elif isinstance(result, lavaplay.PlayList):
             await player.add_to_queue(result.tracks, event.author_id)
+            await player.play_playlist(result.tracks)
             await event.message.respond(f"Added playlist {result.name}")
             return
         await player.play(result[0], event.author_id)
