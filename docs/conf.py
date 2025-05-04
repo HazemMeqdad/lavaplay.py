@@ -12,7 +12,17 @@
 #
 import os
 import sys
+import re
 sys.path.insert(0, os.path.abspath(os.path.join("..")))
+
+# -- Get the version -----------------------------------------------------
+_version = ''
+
+with open('lavaplay/__init__.py') as f:
+    _version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+
+if not _version:
+    raise RuntimeError('Version is not set')
 
 
 # -- Project information -----------------------------------------------------
@@ -29,7 +39,7 @@ author = 'HazemMeqdad'
 # ones.
 autodoc_member_order = 'bysource'
 
-version = '1.0.16a'
+version = _version
 
 extensions = [
     "sphinx.ext.autodoc",
