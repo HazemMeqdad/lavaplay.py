@@ -18,7 +18,9 @@ sys.path.insert(0, os.path.abspath(os.path.join("..")))
 # -- Get the version -----------------------------------------------------
 _version = ''
 
-with open('lavaplay/__init__.py') as f:
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+with open(os.path.join(project_root, 'lavaplay', '__init__.py')) as f:
     _version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 if not _version:
