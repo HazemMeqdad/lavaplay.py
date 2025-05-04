@@ -29,7 +29,7 @@ author = 'HazemMeqdad'
 # ones.
 autodoc_member_order = 'bysource'
 
-version = '1.0.11a'
+version = '1.0.16a'
 
 extensions = [
     "sphinx.ext.autodoc",
