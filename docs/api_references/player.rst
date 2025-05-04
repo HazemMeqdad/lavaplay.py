@@ -2,6 +2,7 @@
 Player API Reference
 =================
 
-
 .. automodule:: lavaplay.player
-   :members:
+    :members:
+    :undoc-members:
+    :show-inheritance:
