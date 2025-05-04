@@ -1,14 +1,23 @@
 from setuptools import setup
 import pathlib
+import re
 
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
+version = ''
+
+with open('lavaplay/__init__.py') as f:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+
+if not version:
+    raise RuntimeError('Version is not set')
+
 
 setup(
     name='lavaplay.py',
-    version='1.0.16a',
+    version=version,
     description='Its a lavalink nodes manger to make a music bots for discord with python.',
     long_description=long_description,
     long_description_content_type='text/markdown',
