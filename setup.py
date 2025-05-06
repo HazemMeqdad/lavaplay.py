@@ -25,7 +25,7 @@ setup(
     author='HazemMeqdad',
     author_email='hazemmeqdad@outlook.com',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
@@ -34,6 +34,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         'Programming Language :: Python :: 3 :: Only',
     ],
     keywords='lavalink, discord, discord-lavalink, lavaplay, lavaplay.py',
