@@ -4,9 +4,8 @@ from .exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
-from .objects import Stats, Track, ConnectionInfo, PlayList, Info
+from .objects import Stats, Track, PlayList, Info
 from .events import Event
-from . import __version__
 from .utlits import get_event_loop, prossing_tracks , prossing_single_track
 import logging
 from .player import Player
@@ -62,7 +61,6 @@ class Node:
         # Unique identifier for the client.
         self.rest = RestApi(host=self.host, port=self.port, password=self.password, ssl=self.ssl)
         self.stats: Stats = None
-        self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
 
         self.session_id: t.Optional[str] = None
 
