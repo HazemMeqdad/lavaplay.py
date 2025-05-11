@@ -4,7 +4,7 @@ from .exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
-from .objects import Stats, Track, PlayList, Info
+from .objects import Track, PlayList, Info
 from .events import Event
 from .utlits import get_event_loop, prossing_tracks , prossing_single_track
 import logging
@@ -38,7 +38,6 @@ class Node:
         port: int,
         password: str,
         user_id: t.Optional[int],
-        resume_key: str = None, 
         resume_timeout: int = 180,
         shards_count: int = 1,
         ssl: bool = False,
@@ -55,14 +54,10 @@ class Node:
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
         self._ws: t.Optional[WS] = None
-        self._resume_key = resume_key
         self._resume_timeout = resume_timeout
 
         # Unique identifier for the client.
         self.rest = RestApi(host=self.host, port=self.port, password=self.password, ssl=self.ssl)
-        self.stats: Stats = None
-
-        self.session_id: t.Optional[str] = None
 
         self.players: t.Dict[int, Player] = {}
     
