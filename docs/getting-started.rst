@@ -7,7 +7,7 @@ Getting Started
 The lavaplay.py package is designed to be used with the lavalink server
 
 .. note::
-    Support lavalink server version 3.7.x or newer
+    Support lavalink server version 4.x.x or newer
 
 lavaplay.py can be installed using the following command:
 
