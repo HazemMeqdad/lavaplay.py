@@ -20,7 +20,7 @@ def get_event_loop() -> asyncio.AbstractEventLoop:
     return loop
 
 
-def prossing_tracks(tracks: list, result: str) -> t.List[Track]:
+def prossing_tracks(tracks: list, result: dict) -> t.List[Track]:
     list_tracks = []
     for track in tracks:
         info = track["info"]
@@ -46,7 +46,7 @@ def prossing_tracks(tracks: list, result: str) -> t.List[Track]:
     return list_tracks
 
 
-def prossing_single_track(track: dict, result: str) -> t.List[Track]:
+def prossing_single_track(track: dict, result: dict) -> t.List[Track]:
     """
     To process one track from payload to Track object.
 
