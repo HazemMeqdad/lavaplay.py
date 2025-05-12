@@ -55,7 +55,7 @@ class RestApi:
                 if method == "DELETE":
                     return
                 response = await response.json()
-                print(response)
+                _LOG.debug(response)
                 if response.get("error") is not None:
                     _LOG.error(f"Request failed: {response}")
                     raise requestFailed(**response)
