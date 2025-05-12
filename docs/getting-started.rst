@@ -14,7 +14,7 @@ lavaplay.py can be installed using the following command:
 windows: ``pip install lavaplay.py``
 MacOS/Linux: ``pip3 install lavaplay.py``
 
-and need to install `java 11 <https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html>`_ * 
+and need to install `java 17 <https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html>`_ *
 LTS or newer required. and create a `application.yml <https://github.com/lavalink-devs/Lavalink/blob/master/LavalinkServer/application.yml.example>`_ file in the root of your project.
 and choice the port and address of the server.
 
