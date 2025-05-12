@@ -8,7 +8,7 @@ updates:
     reviewers:
       - HazemMeqdad
     rebase-strategy: auto
-    target-branch: main
+    target-branch: master
 
   # Python packages
   - package-ecosystem: pip
@@ -18,4 +18,4 @@ updates:
     reviewers:
       - HazemMeqdad
     rebase-strategy: auto
-    target-branch: main
+    target-branch: master
