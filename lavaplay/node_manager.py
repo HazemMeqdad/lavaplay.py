@@ -148,7 +148,7 @@ class Node:
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"], result)
+        return prossing_tracks(result["data"])
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
@@ -170,7 +170,7 @@ class Node:
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"],result)
+        return prossing_tracks(result["data"])
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -192,7 +192,7 @@ class Node:
             return []
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
-        return prossing_tracks(result["data"],result)
+        return prossing_tracks(result["data"])
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -212,15 +212,15 @@ class Node:
         res = result["data"]
 
         if result["loadType"] == "playlist":
-            tracks = prossing_tracks(res["tracks"],result)
+            tracks = prossing_tracks(res["tracks"])
             return PlayList(res["info"]["name"], res["info"]["selectedTrack"], tracks)
         if result["loadType"] == "track":
-            return prossing_single_track(result["data"],result)
+            return prossing_single_track(result["data"])
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
         if result["loadType"] == "empty":
             return []
-        return prossing_tracks(result["data"],result)
+        return prossing_tracks(result["data"])
 
 
 
@@ -249,7 +249,7 @@ class Node:
             artworkUrl=info.get("artworkUrl", None),
             isrc=info.get("isrc", None),
             load_type=result.get("loadType", None),
-            plugin_info=track["pluginInfo"]
+            plugin_info=result["pluginInfo"]
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
@@ -262,7 +262,7 @@ class Node:
             tracks result from base64
         """
         result = await self.rest.decode_tracks(tracks)
-        return prossing_tracks(result,result)
+        return prossing_tracks(result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
