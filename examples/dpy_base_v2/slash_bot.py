@@ -23,7 +23,7 @@ class MyClient(discord.Client):
         self.lavalink: lavaplay.Node = lava.create_node(
             host="localhost",  # Lavalink host
             port=2333,  # Lavalink port
-            password="youshallnotpass",  # Lavlink password
+            password="youshallnotpass",  # Lavalink password
             user_id=0,  # Will change later on ready event
         )
 
@@ -32,7 +32,7 @@ class MyClient(discord.Client):
         await self.tree.sync(guild=DEFAULT_GUILD_ENABLE)
         self.lavalink.user_id = self.user.id
         self.lavalink.set_event_loop(self.loop)
-        self.lavalink.connect()
+        # self.lavalink.connect() Only if connect is set to False when you create the node
 
 bot = MyClient(intents=discord.Intents.all())
 lavalink = bot.lavalink

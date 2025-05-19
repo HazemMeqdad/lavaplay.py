@@ -57,7 +57,7 @@ class Player:
             force play queue is ignored
         """
         if not track.encoded:
-            raise ValueError("Encoded of the track is None")
+            raise ValueError("track.encoded is missing")
 
         if len(self.queue) == 0 or start:
             await self.rest.update_player(
