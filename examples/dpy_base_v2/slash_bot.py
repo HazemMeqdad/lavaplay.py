@@ -25,6 +25,7 @@ class MyClient(discord.Client):
             port=2333,  # Lavalink port
             password="youshallnotpass",  # Lavalink password
             user_id=0,  # Will change later on ready event
+            connect=False # Not working at the moment
         )
 
     async def setup_hook(self):
@@ -32,7 +33,7 @@ class MyClient(discord.Client):
         await self.tree.sync(guild=DEFAULT_GUILD_ENABLE)
         self.lavalink.user_id = self.user.id
         self.lavalink.set_event_loop(self.loop)
-        # self.lavalink.connect() Only if connect is set to False when you create the node
+        self.lavalink.connect()
 
 bot = MyClient(intents=discord.Intents.all())
 lavalink = bot.lavalink
