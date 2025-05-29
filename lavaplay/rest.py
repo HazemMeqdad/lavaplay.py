@@ -18,7 +18,7 @@ class RestApi:
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
-    is_ssl: :class:`bool`
+    ssl: :class:`bool`
         Is server using ssl.
     version: :class:`str`
         The version for lavalink server, default version is `v4`, newer version and recommend.
