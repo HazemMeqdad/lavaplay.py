@@ -36,11 +36,8 @@ class Lavalink:
         loop: :class:`asyncio.AbstractEventLoop`
             The event loop for the node.
         """
-        node = Node(host=host, port=port, password=password, user_id=user_id, name=name, shard_count=shard_count, resume_timeout=resume_timeout, is_ssl=ssl, loop=loop)
+        node = Node(host=host, port=port, password=password, user_id=user_id, name=name, shard_count=shard_count, resume_timeout=resume_timeout, is_ssl=ssl, loop=loop, connect=connect)
         self._nodes.append(node)
-        if connect is True:
-            node.connect()
-
         return node
     
     def destroy_node(self, node: Node):
