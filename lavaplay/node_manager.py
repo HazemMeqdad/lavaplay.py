@@ -51,7 +51,7 @@ class Node:
         self.user_id = user_id
         self.shards_count = shards_count
         self.ssl = ssl
-        self.connect = connect
+        self._connect = connect
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
