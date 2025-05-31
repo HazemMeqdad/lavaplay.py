@@ -93,7 +93,7 @@ class WS:
             await self._connect()
 
     async def callback(self, payload: dict):
-        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#ready-op
+        # https://lavalink.dev/api/websocket.html#ready-op
         if payload["op"] == "ready":
             _LOG.info("Lavalink client is ready")
             self._session_id = payload["sessionId"]
@@ -111,7 +111,7 @@ class WS:
                 _LOG.info("Lavalink client started a new session successfully")
             self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
         
-        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#player-update-op
+        # https://lavalink.dev/api/websocket.html#player-update-op
         elif payload["op"] == "playerUpdate":
             payload.pop("op")
             guild_id = int(payload["guildId"])
@@ -127,7 +127,7 @@ class WS:
             data = PlayerUpdateEvent.from_kwargs(**payload)
             self.emitter.emit("PlayerUpdateEvent", data)
         
-        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#stats-op
+        # https://lavalink.dev/api/websocket.html#stats-op
         elif payload["op"] == "stats":
             payload.pop("op")
             # Fix types
@@ -138,7 +138,7 @@ class WS:
             self.node.stats = Stats.from_kwargs(**payload)
             self.emitter.emit("StatsUpdateEvent", StatsUpdateEvent(self.node.stats))
 
-        # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#event-op
+        # https://lavalink.dev/api/websocket.html#event-op
         elif payload["op"] == "event" and payload.get("track") is not None:
             await self.event_dispatch(payload)
             
