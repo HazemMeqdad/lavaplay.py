@@ -128,10 +128,11 @@ class TrackLoadFailed(Exception):
     cause: :class:`str`
         the cause of the exception
     """
-    def __init__(self, message: str, severity: str, cause: str) -> None:
+    def __init__(self, message: str, severity: str, cause: str, causeStackTrace: str) -> None:
         self._message = message
         self._severity = severity
         self._cause = cause
+        self._causeStackTrace = causeStackTrace
 
     @property
     def message(self):
@@ -153,6 +154,13 @@ class TrackLoadFailed(Exception):
         The cause of the exception.
         """
         return self._cause
+
+    @property
+    def causeStackTrace(self):
+        """
+        The cause of the exception stack trace.
+        """
+        return self._causeStackTrace
 
 class requestFailed(Exception):
     """

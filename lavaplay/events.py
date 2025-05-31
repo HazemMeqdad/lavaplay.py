@@ -48,6 +48,7 @@ class TrackException(Event):
     severity: t.Optional[str]
     cause: t.Optional[str]
     message: t.Optional[str] = None
+    causeStackTrace: t.Optional[str] = None
 
 @dataclass
 class TrackExceptionEvent(Event):
@@ -57,9 +58,6 @@ class TrackExceptionEvent(Event):
     track: Track
     guild_id: int
     exception: TrackException
-
-
-
 
 @dataclass
 class TrackStuckEvent(Event):
