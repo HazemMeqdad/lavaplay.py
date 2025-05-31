@@ -109,7 +109,7 @@ class WS:
                 _LOG.info("Lavalink client resumed session successfully")
             else:
                 _LOG.info("Lavalink client started a new session successfully")
-            self.emitter.emit("ready", data=ReadyEvent.from_kwargs(**payload))
+            self.emitter.emit("ReadyEvent", data=ReadyEvent.from_kwargs(**payload))
         
         # https://lavalink.dev/api/websocket.html#player-update-op
         elif payload["op"] == "playerUpdate":
