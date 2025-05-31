@@ -125,8 +125,10 @@ class TrackLoadFailed(Exception):
         the error message
     severity: :class:`str`
         gets the severity level of the track loading failure
+    cause: :class:`str`
+        the cause of the exception
     """
-    def __init__(self, message: str, severity: str, cause:str) -> None:
+    def __init__(self, message: str, severity: str, cause: str) -> None:
         self._message = message
         self._severity = severity
         self._cause = cause
@@ -144,6 +146,13 @@ class TrackLoadFailed(Exception):
         A severity level. Can be one of: ```COMMON```, ```SUSPICIOUS``` , ```FAULT```.
         """
         return self._severity
+
+    @property
+    def cause(self):
+        """
+        The cause of the exception.
+        """
+        return self._cause
 
 class requestFailed(Exception):
     """
