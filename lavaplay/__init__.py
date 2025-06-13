@@ -1,14 +1,14 @@
 """
 Lavalink connecter
 ~~~~~~~~~~~~~~~
-:copyright: (c) 2021 HazemMeqdad
+:copyright: (c) 2021-2025 HazemMeqdad
 :license: MIT, see LICENSE for more details.
 """
 
 __title__ = "lavaplay.py"
 __author__ = "HazemMeqdad"
 __license__ = "MIT"
-__version__ = "1.0.16a"
+__version__ = "1.0.17a"
 
 from .client import Lavalink
 from .objects import *

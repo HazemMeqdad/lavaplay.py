@@ -154,7 +154,7 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         return prossing_tracks(result["data"], result)
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
@@ -176,7 +176,7 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         return prossing_tracks(result["data"],result)
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
@@ -198,7 +198,7 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         return prossing_tracks(result["data"],result)
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
@@ -224,7 +224,7 @@ class Node:
         if result["loadType"] == "track":
             return prossing_single_track(result["data"],result)
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         if result["loadType"] == "empty":
             return []
         return prossing_tracks(result["data"],result)
