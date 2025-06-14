@@ -23,8 +23,9 @@ class MyClient(discord.Client):
         self.lavalink: lavaplay.Node = lava.create_node(
             host="localhost",  # Lavalink host
             port=2333,  # Lavalink port
-            password="youshallnotpass",  # Lavlink password
+            password="youshallnotpass",  # Lavalink password
             user_id=0,  # Will change later on ready event
+            connect=False # Not working at the moment
         )
 
     async def setup_hook(self):
