@@ -219,7 +219,7 @@ class Node:
         if result["loadType"] == "track":
             return prossing_single_track(result["data"])
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         if result["loadType"] == "empty":
             return []
         return prossing_tracks(result["data"])
