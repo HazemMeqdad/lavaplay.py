@@ -54,7 +54,7 @@ class Node:
         self._connect = connect
         
         self.loop = loop or get_event_loop()
-        self.event_manager = Emitter(self.loop)
+        self.event_manager = Emitter()
         self._ws: t.Optional[WS] = None
         self._resume_timeout = resume_timeout
 
