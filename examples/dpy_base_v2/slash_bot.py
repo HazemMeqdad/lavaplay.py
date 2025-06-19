@@ -32,8 +32,8 @@ class MyClient(discord.Client):
         self.tree.copy_global_to(guild=DEFAULT_GUILD_ENABLE)
         await self.tree.sync(guild=DEFAULT_GUILD_ENABLE)
         self.lavalink.user_id = self.user.id
-        self.lavalink.set_event_loop(self.loop)
-        self.lavalink.connect()
+        #self.lavalink.set_event_loop(self.loop)
+        await self.lavalink.connect(self.loop)
 
 bot = MyClient(intents=discord.Intents.all())
 lavalink = bot.lavalink

@@ -54,7 +54,7 @@ class Node:
         self._connect = connect
         
         self.loop = loop or get_event_loop()
-        self.event_manager = Emitter()
+        self.event_manager = Emitter(self.loop)
         self._ws: t.Optional[WS] = None
         self._resume_timeout = resume_timeout
 
@@ -318,10 +318,13 @@ class Node:
         data = await self.rest.version()
         return data["version"]
 
-    def connect(self):
+    def connect(self, loop: asyncio.AbstractEventLoop = None) -> t.Optional[asyncio.Task]:
         """
         Connect to the lavalink websocket
         """
+        if loop:
+            self.loop = loop
+
         self._ws = WS(
             node=self, 
             host=self.host, 
@@ -331,7 +334,7 @@ class Node:
             user_id=self.user_id,
             shards_count=self.shards_count
         )
-        asyncio.ensure_future(self._ws._connect(), loop=self.loop)
+        return self._ws.connect()
 
     async def close(self):
         """
