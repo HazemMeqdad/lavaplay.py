@@ -324,6 +324,7 @@ class Node:
         """
         if loop:
             self.loop = loop
+            self.event_manager._loop = loop
 
         self._ws = WS(
             node=self, 
