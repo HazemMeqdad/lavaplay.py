@@ -33,7 +33,7 @@ class MyClient(discord.Client):
         await self.tree.sync(guild=DEFAULT_GUILD_ENABLE)
         self.lavalink.user_id = self.user.id
         #self.lavalink.set_event_loop(self.loop)
-        await self.lavalink.connect(self.loop)
+        self.lavalink.connect(self.loop)
 
 bot = MyClient(intents=discord.Intents.all())
 lavalink = bot.lavalink
