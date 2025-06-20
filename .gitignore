@@ -134,3 +134,6 @@ test*.py
 token.txt
 .vscode/
 tasks.txt
+
+# For ides ( pycharm, .... )
+.idea/
