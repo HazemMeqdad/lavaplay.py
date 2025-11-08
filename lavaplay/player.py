@@ -1,6 +1,6 @@
 import typing as t
 import asyncio
-from .objects import Track, Filters, ConnectionInfo , PlayList , VoiceInfo
+from .objects import Track, Filters, ConnectionInfo, PlayList, VoiceInfo
 from .exceptions import VolumeError
 import random
 import logging
@@ -51,7 +51,7 @@ class Player:
 
         Parameters
         ---------
-        requester: :class:`bool`
+        requester: :class:`int`
             user id for requester the play track
         start: :class:`bool`
             force play queue is ignored
@@ -69,17 +69,19 @@ class Player:
             track.requester = requester
             self.queue.append(track)
 
-    async def play_playlist(self, playlist: PlayList):
+    async def play_playlist(self, playlist: PlayList, requester: t.Optional[int] = None) -> None:
         """
         Play track or add to the queue list.
 
         Parameters
         ---------
-        playlist: :class:`bool`
+        playlist: :class:`PlayList`
+            playlist to play
+        requester: :class:`int` | :class:`None`
             user id for requester the play track
         """
         for track in playlist.tracks:
-            await self.play(track)
+            await self.play(track, requester)
 
     def repeat(self, stats: bool) -> None:
         """
@@ -224,18 +226,18 @@ class Player:
         """        
         await self.rest.destroy_player(self.node.session_id, self.guild_id)
 
-    def shuffle(self, state: bool = True) -> t.Union["Node", t.List]:
+    def shuffle(self, state: bool = True) -> t.List[Track]:
         """
         Add shuffle to the track.
 
         Parameters
         ---------
         state: :class:`bool`
-            the stats for shuffle track
+            the stats for shuffle track (unused)
         """        
         if not self.queue:
             return []
-        self._shuffle = state
+        self._shuffle = state  # unused
         np = self.queue[0]
         self.queue.remove(np)
         self.queue = random.sample(self.queue, len(self.queue))
@@ -252,9 +254,9 @@ class Player:
             the position of the track in the queue
         """        
         if not self.queue:
-            return []
+            return
         self.queue.pop(position)
-    
+
     def index(self, position: int) -> t.Union[Track, None]:
         """
         Get the track at a specific position in the queue.
@@ -353,10 +355,24 @@ class Player:
         Return the ping of the player.
         """
         return self._ping
-    
+
     @property
     def is_playing(self) -> bool:
         """
         Return if the player is playing.
         """
         return len(self.queue) > 0
+
+    @property
+    def is_repeat(self) -> bool:
+        """
+        Return if the player is repeating the current track.
+        """
+        return self._repeat
+
+    @property
+    def is_queue_repeat(self) -> bool:
+        """
+        Return if the player is repeating the queue.
+        """
+        return self._queue_repeat
