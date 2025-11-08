@@ -164,13 +164,13 @@ class WS:
             # reason = payload["reason"]
             if not player or not player.queue:
                 return
-            if player._queue_repeat:
+            if player.is_queue_repeat:
                 player.queue.append(player.queue.pop(0))
                 if len(player.queue) == 0:
                     return
                 await player.play(player.queue[0], player.queue[0].requester, True)
                 return
-            if player._repeat:
+            if player.is_repeat:
                 await player.play(track, player.queue[0].requester, True)
                 return
             player.queue.pop(0)
