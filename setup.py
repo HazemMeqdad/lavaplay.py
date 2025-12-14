@@ -2,7 +2,6 @@ from setuptools import setup
 import pathlib
 import re
 
-
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
@@ -13,7 +12,6 @@ with open('lavaplay/__init__.py') as f:
 
 if not version:
     raise RuntimeError('Version is not set')
-
 
 setup(
     name='lavaplay.py',
