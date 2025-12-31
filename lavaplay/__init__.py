@@ -1,7 +1,7 @@
 """
 Lavalink connecter
 ~~~~~~~~~~~~~~~
-:copyright: (c) 2021-2025 HazemMeqdad
+:copyright: (c) 2021-2026 HazemMeqdad
 :license: MIT, see LICENSE for more details.
 """
 
