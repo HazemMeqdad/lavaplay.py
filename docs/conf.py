@@ -30,7 +30,7 @@ if not _version:
 # -- Project information -----------------------------------------------------
 
 project = 'lavaplay'
-copyright = '2023-2025, HazemMeqdad'
+copyright = '2023-2026, HazemMeqdad'
 author = 'HazemMeqdad'
 
 
