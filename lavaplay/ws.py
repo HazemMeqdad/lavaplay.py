@@ -44,10 +44,19 @@ class WS:
         self.emitter: Emitter = node.event_manager
         self.is_connect: bool = False
         self._session_id: str = None
+
+        if node._connect:
+            self.connect()
     
     @property
     def session_id(self) -> str:
         return self._session_id
+
+    def connect(self) -> asyncio.Task:
+        """
+        Connect to the lavalink websocket
+        """
+        return self._loop.create_task(self._connect())
 
     async def _connect(self):
         async with aiohttp.ClientSession(headers=self._headers, loop=self._loop) as session:
