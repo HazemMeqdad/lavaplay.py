@@ -297,7 +297,8 @@ class Player:
                 "voice": {
                     "token": token,
                     "sessionId": session_id,
-                    "endpoint": endpoint.replace("wss://", "")
+                    "endpoint": endpoint.replace("wss://", ""),
+                    "channelId": channel_id
                 }
             }
         )
