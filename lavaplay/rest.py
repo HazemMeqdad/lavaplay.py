@@ -18,7 +18,7 @@ class RestApi:
         The port to use for websocket and REST connections.
     password: :class:`str`
         The password used for authentication.
-    is_ssl: :class:`bool`
+    ssl: :class:`bool`
         Is server using ssl.
     version: :class:`str`
         The version for lavalink server, default version is `v4`, newer version and recommend.
@@ -55,7 +55,7 @@ class RestApi:
                 if method == "DELETE":
                     return
                 response = await response.json()
-                print(response)
+                _LOG.debug(response)
                 if response.get("error") is not None:
                     _LOG.error(f"Request failed: {response}")
                     raise requestFailed(**response)

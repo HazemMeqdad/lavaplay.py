@@ -4,9 +4,8 @@ from .exceptions import TrackLoadFailed
 from .emitter import Emitter
 from .ws import WS
 from .rest import RestApi
-from .objects import Stats, Track, ConnectionInfo, PlayList, Info
+from .objects import Track, PlayList, Info
 from .events import Event
-from . import __version__
 from .utlits import get_event_loop, prossing_tracks , prossing_single_track
 import logging
 from .player import Player
@@ -39,11 +38,11 @@ class Node:
         port: int,
         password: str,
         user_id: t.Optional[int],
-        resume_key: str = None, 
         resume_timeout: int = 180,
         shards_count: int = 1,
         ssl: bool = False,
         loop: t.Optional[asyncio.AbstractEventLoop] = None,
+        connect,
         **kwargs
     ) -> None:
         self.host = host
@@ -52,19 +51,15 @@ class Node:
         self.user_id = user_id
         self.shards_count = shards_count
         self.ssl = ssl
+        self._connect = connect
         
         self.loop = loop or get_event_loop()
         self.event_manager = Emitter(self.loop)
         self._ws: t.Optional[WS] = None
-        self._resume_key = resume_key
         self._resume_timeout = resume_timeout
 
         # Unique identifier for the client.
         self.rest = RestApi(host=self.host, port=self.port, password=self.password, ssl=self.ssl)
-        self.stats: Stats = None
-        self._voice_handlers: t.Dict[int, ConnectionInfo] = {}
-
-        self.session_id: t.Optional[str] = None
 
         self.players: t.Dict[int, Player] = {}
     
@@ -154,8 +149,8 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
-        return prossing_tracks(result["data"], result)
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"])
 
     async def search_soundcloud(self, query: str) -> t.Optional[t.Union[t.List[Track], TrackLoadFailed]]:
         """
@@ -176,8 +171,8 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
-        return prossing_tracks(result["data"],result)
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"])
     
     async def search_youtube_music(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -198,8 +193,8 @@ class Node:
         if result["loadType"] == "empty":
             return []
         if result["loadType"] == "error":
-            raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
-        return prossing_tracks(result["data"],result)
+            raise TrackLoadFailed(res["message"], res["severity"], res["cause"])
+        return prossing_tracks(result["data"])
 
     async def get_tracks(self, query: str) -> t.Optional[t.Union[t.List[Track], PlayList, TrackLoadFailed]]:
         """
@@ -219,15 +214,15 @@ class Node:
         res = result["data"]
 
         if result["loadType"] == "playlist":
-            tracks = prossing_tracks(res["tracks"],result)
+            tracks = prossing_tracks(res["tracks"])
             return PlayList(res["info"]["name"], res["info"]["selectedTrack"], tracks)
         if result["loadType"] == "track":
-            return prossing_single_track(result["data"],result)
+            return prossing_single_track(result["data"])
         if result["loadType"] == "error":
             raise TrackLoadFailed(res["message"], res["severity"], res["cause"], res["causeStackTrace"])
         if result["loadType"] == "empty":
             return []
-        return prossing_tracks(result["data"],result)
+        return prossing_tracks(result["data"])
 
 
 
@@ -256,7 +251,7 @@ class Node:
             artworkUrl=info.get("artworkUrl", None),
             isrc=info.get("isrc", None),
             load_type=result.get("loadType", None),
-            plugin_info=track["pluginInfo"]
+            plugin_info=result["pluginInfo"]
         )
 
     async def decodetracks(self, tracks: t.List[t.Dict]) -> t.List[Track]:
@@ -269,7 +264,7 @@ class Node:
             tracks result from base64
         """
         result = await self.rest.decode_tracks(tracks)
-        return prossing_tracks(result,result)
+        return prossing_tracks(result)
 
     async def auto_search_tracks(self, query: str) -> t.Union[t.Optional[t.List[Track]], t.Optional[PlayList]]:
         """
@@ -323,10 +318,14 @@ class Node:
         data = await self.rest.version()
         return data["version"]
 
-    def connect(self):
+    def connect(self, loop: asyncio.AbstractEventLoop = None) -> t.Optional[asyncio.Task]:
         """
         Connect to the lavalink websocket
         """
+        if loop:
+            self.loop = loop
+            self.event_manager._loop = loop
+
         self._ws = WS(
             node=self, 
             host=self.host, 
@@ -336,7 +335,7 @@ class Node:
             user_id=self.user_id,
             shards_count=self.shards_count
         )
-        asyncio.ensure_future(self._ws._connect(), loop=self.loop)
+        return self._ws.connect()
 
     async def close(self):
         """

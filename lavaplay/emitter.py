@@ -15,8 +15,8 @@ class Emitter:
     loop: :class:`AbstractEventLoop`
         a loop event from asyncio
     """
-    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
-        self._loop = loop
+    def __init__(self, loop: asyncio.AbstractEventLoop = None) -> None:
+        self._loop = loop or asyncio.get_event_loop()
         self.listeners = deque()
     
     def add_listener(self, event: t.Union[str, Event], func: t.Callable):
