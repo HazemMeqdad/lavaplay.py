@@ -298,7 +298,7 @@ class Player:
                     "token": token,
                     "sessionId": session_id,
                     "endpoint": endpoint.replace("wss://", ""),
-                    "channelId": channel_id
+                    "channelId": str(channel_id)
                 }
             }
         )
