@@ -104,10 +104,7 @@ async def play(interaction: discord.Interaction, *, query: str):
         await interaction.response.send_message(
             "Playlist found, Adding to queue, Please wait..."
         )
-        player.add_to_queue(
-            tracks.tracks, interaction.user.id
-        )
-        await player.play_playlist(tracks)
+        await player.play_playlist(tracks,requester=interaction.user.id)
         await interaction.edit_original_response(
             content="Added to queue, tracks: {}, name: {}".format(
                 len(tracks.tracks), tracks.name
